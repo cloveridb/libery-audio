@@ -1,666 +1,506 @@
 <!DOCTYPE html>
 <html lang="id">
 <head>
-<meta charset="UTF-8">
-<meta name="viewport" content="width=device-width,initial-scale=1.0">
-<title>Admin Panel — LiberyAudio</title>
-<link rel="stylesheet" href="/css/style.css">
+<meta charset="UTF-8"/>
+<meta name="viewport" content="width=device-width,initial-scale=1.0"/>
+<title>Admin Panel – XELLO Studio</title>
+<link href="https://fonts.googleapis.com/css2?family=Orbitron:wght@400;700;900&family=Space+Mono:wght@400;700&family=Inter:wght@300;400;500;600&display=swap" rel="stylesheet"/>
 <style>
-body{display:flex;min-height:100vh}
+:root{--c:#00e5ff;--c2:#7b2fff;--c3:#ff2d6b;--g:#00e5a0;--bg:#04080f;--bg2:#080f1c;--bg3:#0c1525;--border:rgba(0,229,255,0.12)}
+*{box-sizing:border-box;margin:0;padding:0}
+body{font-family:'Inter',sans-serif;background:var(--bg);color:#c8dff0;min-height:100vh}
+body::before{content:'';position:fixed;inset:0;background-image:linear-gradient(rgba(0,229,255,0.015) 1px,transparent 1px),linear-gradient(90deg,rgba(0,229,255,0.015) 1px,transparent 1px);background-size:50px 50px;pointer-events:none}
 
-/* SIDEBAR */
-.sidebar{width:220px;background:var(--bg2);border-right:1px solid var(--border);display:flex;flex-direction:column;flex-shrink:0;position:sticky;top:0;height:100vh}
-.s-logo{padding:22px 18px;border-bottom:1px solid var(--border)}
-.s-logo h2{font-size:16px;font-weight:800}
-.s-logo h2 span{color:var(--accent)}
-.s-logo .admin-tag{font-size:10px;font-weight:700;color:var(--red);letter-spacing:1px;margin-top:4px;background:rgba(239,68,68,0.1);display:inline-block;padding:2px 8px;border-radius:100px;border:1px solid rgba(239,68,68,0.2)}
-.s-nav{flex:1;padding:12px 10px;display:flex;flex-direction:column;gap:2px}
-.nav-btn{display:flex;align-items:center;gap:10px;padding:9px 12px;border-radius:8px;font-size:13px;font-weight:600;color:var(--muted);cursor:pointer;background:none;border:none;width:100%;text-align:left;transition:all .2s;font-family:'Syne',sans-serif}
-.nav-btn:hover,.nav-btn.active{background:rgba(0,229,255,0.06);color:var(--text)}
-.nav-btn.active{color:var(--accent);border-left:2px solid var(--accent);padding-left:10px}
-.s-bottom{padding:14px;border-top:1px solid var(--border)}
-.logout-btn{display:flex;align-items:center;gap:8px;padding:9px 12px;border-radius:8px;font-size:13px;font-weight:600;color:var(--muted);cursor:pointer;background:none;border:none;width:100%;font-family:'Syne',sans-serif;transition:all .2s}
-.logout-btn:hover{color:var(--red);background:rgba(239,68,68,0.06)}
+/* LOGIN */
+#loginPage{position:fixed;inset:0;display:flex;align-items:center;justify-content:center;z-index:100;background:var(--bg)}
+.login-box{width:100%;max-width:360px;padding:20px}
+.login-logo{font-family:'Orbitron',sans-serif;font-size:16px;font-weight:900;color:var(--c);letter-spacing:4px;text-align:center;margin-bottom:6px;text-shadow:0 0 20px var(--c)}
+.login-sub{font-size:10px;color:rgba(200,223,240,0.25);text-align:center;letter-spacing:3px;margin-bottom:28px}
+.login-card{background:var(--bg2);border:1px solid var(--border);border-radius:16px;padding:28px}
+.lg label{display:block;font-size:10px;letter-spacing:2px;color:rgba(200,223,240,0.3);text-transform:uppercase;margin-bottom:7px;font-family:'Space Mono',monospace}
+.lg input{width:100%;background:rgba(0,229,255,0.03);border:1px solid rgba(0,229,255,0.12);border-radius:8px;padding:11px 14px;color:#c8dff0;font-size:14px;outline:none;margin-bottom:14px;font-family:'Inter',sans-serif}
+.lg input:focus{border-color:rgba(0,229,255,0.4);background:rgba(0,229,255,0.05)}
+.lg button{width:100%;padding:12px;background:linear-gradient(135deg,var(--c),var(--c2));color:#04080f;font-family:'Orbitron',sans-serif;font-size:12px;font-weight:700;letter-spacing:2px;border:none;border-radius:8px;cursor:pointer}
+.lg-err{font-size:12px;text-align:center;color:#ff5c7b;margin-top:10px}
 
-/* MAIN */
-.main{flex:1;overflow-y:auto;padding:28px}
-.page-title{font-size:20px;font-weight:800;margin-bottom:4px}
-.page-sub{color:var(--muted);font-size:13px;margin-bottom:24px}
-.page{display:none}.page.active{display:block}
+/* LAYOUT */
+#mainApp{display:none;position:relative;z-index:1}
+.layout{display:flex;min-height:100vh}
+.sidebar{width:210px;background:rgba(8,15,28,0.98);border-right:1px solid var(--border);display:flex;flex-direction:column;position:fixed;left:0;top:0;bottom:0;z-index:50;backdrop-filter:blur(20px)}
+.sb-logo{padding:18px;border-bottom:1px solid var(--border)}
+.sb-logo-t{font-family:'Orbitron',sans-serif;font-size:12px;font-weight:900;color:var(--c);letter-spacing:3px}
+.sb-logo-s{font-size:9px;color:rgba(200,223,240,0.2);letter-spacing:2px;margin-top:3px}
+.sb-admin-badge{margin:12px;background:rgba(255,45,107,0.1);border:1px solid rgba(255,45,107,0.25);border-radius:8px;padding:8px 12px;font-size:10px;color:#ff5c7b;font-family:'Orbitron',sans-serif;letter-spacing:1px;text-align:center}
+.sb-nav{flex:1;padding:8px}
+.sb-nav a{display:flex;align-items:center;gap:10px;padding:10px;border-radius:8px;color:rgba(200,223,240,0.4);text-decoration:none;font-size:12px;transition:all .2s;cursor:pointer;border:none;background:none;width:100%;font-family:'Inter',sans-serif;margin-bottom:2px}
+.sb-nav a:hover{color:rgba(200,223,240,0.9);background:rgba(255,255,255,0.04)}
+.sb-nav a.active{color:var(--c);background:rgba(0,229,255,0.08);border:1px solid rgba(0,229,255,0.15)}
+.sb-nav a .icon{font-size:15px;width:20px;text-align:center}
+.sb-logout{padding:12px;border-top:1px solid var(--border)}
+.sb-logout button{width:100%;padding:8px;background:rgba(255,45,107,0.08);border:1px solid rgba(255,45,107,0.2);border-radius:7px;color:rgba(255,93,130,0.7);font-size:11px;font-family:'Orbitron',sans-serif;letter-spacing:1px;cursor:pointer}
+
+.main{margin-left:210px;flex:1;padding:24px}
+.page-section{display:none}
+.page-section.active{display:block}
+.page-title{font-family:'Orbitron',sans-serif;font-size:18px;font-weight:900;color:#fff;letter-spacing:2px;margin-bottom:4px}
+.page-sub{font-size:12px;color:rgba(200,223,240,0.35);margin-bottom:20px}
+
+/* CARDS */
+.card{background:var(--bg2);border:1px solid var(--border);border-radius:14px;padding:20px;margin-bottom:16px}
+.card-title{font-family:'Orbitron',sans-serif;font-size:10px;font-weight:700;letter-spacing:3px;color:rgba(200,223,240,0.3);text-transform:uppercase;margin-bottom:16px;display:flex;align-items:center;gap:8px}
+.card-title span{color:var(--c)}
 
 /* STATS */
-.stats-row{display:grid;grid-template-columns:repeat(auto-fit,minmax(160px,1fr));gap:14px;margin-bottom:24px}
-.stat{background:var(--card);border:1px solid var(--border);border-radius:12px;padding:18px}
-.stat-label{font-size:10px;font-weight:700;color:var(--muted);letter-spacing:1px;margin-bottom:8px}
-.stat-value{font-size:30px;font-weight:800;font-family:'Space Mono',monospace;letter-spacing:-1px}
-.stat-value.accent{color:var(--accent)}
-.stat-value.green{color:var(--green)}
-.stat-value.yellow{color:var(--yellow)}
+.stats-row{display:grid;grid-template-columns:repeat(auto-fit,minmax(160px,1fr));gap:14px;margin-bottom:20px}
+.stat-card{background:var(--bg2);border:1px solid var(--border);border-radius:12px;padding:18px;text-align:center}
+.stat-num{font-family:'Orbitron',sans-serif;font-size:28px;font-weight:900;color:var(--c)}
+.stat-lbl{font-size:10px;letter-spacing:2px;color:rgba(200,223,240,0.3);text-transform:uppercase;margin-top:4px}
 
-/* SEARCH BAR */
-.search-bar{display:flex;gap:10px;margin-bottom:16px}
-.search-input{flex:1;background:var(--card);border:1px solid var(--border);border-radius:8px;padding:10px 14px;color:var(--text);font-size:13px;outline:none;font-family:'Syne',sans-serif;transition:border-color .2s}
-.search-input:focus{border-color:var(--accent)}
+/* TABLE */
+.data-table{width:100%;border-collapse:collapse}
+.data-table th{font-size:9px;letter-spacing:2px;color:rgba(200,223,240,0.25);text-transform:uppercase;padding:8px 12px;text-align:left;border-bottom:1px solid rgba(255,255,255,0.04)}
+.data-table td{padding:10px 12px;font-size:12px;border-bottom:1px solid rgba(255,255,255,0.03);vertical-align:middle}
+.data-table tr:hover td{background:rgba(255,255,255,0.02)}
 
-/* USER ROW */
-.user-row{display:grid;grid-template-columns:1fr 120px 120px 90px 140px;align-items:center;gap:12px;padding:13px 16px;border-bottom:1px solid rgba(255,255,255,0.03);font-size:13px}
-.user-row:hover{background:rgba(255,255,255,0.01)}
-.user-row:last-child{border-bottom:none}
-.user-row.header{font-size:10px;font-weight:700;color:var(--muted);letter-spacing:1px;padding:0 16px 10px;border-bottom:1px solid var(--border)}
-.u-name{font-weight:700}
-.u-email{font-size:11px;color:var(--muted);margin-top:2px}
-.u-actions{display:flex;gap:6px;flex-wrap:wrap}
+/* TIER BADGE */
+.tier-badge{font-size:10px;padding:3px 8px;border-radius:10px;font-family:'Space Mono',monospace;font-weight:700}
+.tier-trial{background:rgba(255,152,0,0.15);color:#ff9800;border:1px solid rgba(255,152,0,0.3)}
+.tier-beginner{background:rgba(33,150,243,0.15);color:#4fc3f7;border:1px solid rgba(33,150,243,0.3)}
+.tier-pro{background:rgba(0,229,255,0.12);color:var(--c);border:1px solid rgba(0,229,255,0.3)}
+.status-on{color:var(--g);font-size:12px}
+.status-off{color:var(--c3);font-size:12px}
 
-/* MODAL */
-.modal-overlay{position:fixed;inset:0;background:rgba(0,0,0,0.75);z-index:1000;display:none;align-items:center;justify-content:center;padding:20px}
-.modal-overlay.show{display:flex}
-.modal{background:var(--card2);border:1px solid var(--border);border-radius:16px;width:100%;max-width:460px;padding:28px}
-.modal-title{font-size:16px;font-weight:800;margin-bottom:20px;display:flex;justify-content:space-between;align-items:center}
-.modal-close{cursor:pointer;color:var(--muted);font-size:20px;line-height:1;padding:0 4px}
-.modal-close:hover{color:var(--text)}
+/* BUTTONS */
+.btn-sm{padding:4px 10px;border-radius:5px;font-size:10px;cursor:pointer;font-family:'Space Mono',monospace;transition:all .2s;border:1px solid}
+.btn-cyan{background:rgba(0,229,255,0.08);border-color:rgba(0,229,255,0.25);color:var(--c)}
+.btn-cyan:hover{background:rgba(0,229,255,0.15)}
+.btn-red{background:rgba(255,45,107,0.08);border-color:rgba(255,45,107,0.25);color:var(--c3)}
+.btn-red:hover{background:rgba(255,45,107,0.15)}
+.btn-green{background:rgba(0,229,160,0.08);border-color:rgba(0,229,160,0.25);color:var(--g)}
+.btn-green:hover{background:rgba(0,229,160,0.15)}
+.btn-orange{background:rgba(255,152,0,0.08);border-color:rgba(255,152,0,0.25);color:#ff9800}
+.btn-orange:hover{background:rgba(255,152,0,0.15)}
 
-/* PLAN QUICK BUTTONS */
-.plan-quick{display:grid;grid-template-columns:1fr 1fr 1fr;gap:8px;margin-bottom:20px}
-.pq-btn{padding:10px;border-radius:8px;font-size:12px;font-weight:700;cursor:pointer;border:1px solid var(--border);background:transparent;color:var(--text);font-family:'Syne',sans-serif;transition:all .2s;text-align:center}
-.pq-btn:hover,.pq-btn.selected{background:rgba(0,229,255,0.1);border-color:var(--accent);color:var(--accent)}
-.pq-btn.free-btn:hover,.pq-btn.free-btn.selected{background:rgba(100,116,139,0.1);border-color:var(--muted);color:var(--muted)}
+/* FORMS */
+.form-row{display:flex;gap:10px;align-items:flex-end;flex-wrap:wrap;margin-bottom:16px}
+.form-group{flex:1;min-width:120px}
+.form-group label{display:block;font-size:9px;letter-spacing:2px;color:rgba(200,223,240,0.3);text-transform:uppercase;margin-bottom:6px}
+.form-group input,.form-group select{width:100%;background:rgba(0,229,255,0.03);border:1px solid rgba(0,229,255,0.12);border-radius:8px;padding:10px 12px;color:#c8dff0;font-size:13px;outline:none;font-family:'Inter',sans-serif}
+.form-group input:focus,.form-group select:focus{border-color:rgba(0,229,255,0.4)}
+.form-group select option{background:#0c1525}
+.action-btn{padding:10px 18px;background:linear-gradient(135deg,var(--c),var(--c2));color:#04080f;font-family:'Orbitron',sans-serif;font-size:10px;font-weight:700;letter-spacing:2px;border:none;border-radius:8px;cursor:pointer;white-space:nowrap;flex-shrink:0}
 
-/* ALERT */
-.alert{padding:12px 16px;border-radius:8px;font-size:13px;margin-bottom:16px}
-.alert-info{background:rgba(0,229,255,0.05);border:1px solid rgba(0,229,255,0.15);color:var(--accent)}
-.alert-danger{background:rgba(239,68,68,0.08);border:1px solid rgba(239,68,68,0.2);color:var(--red)}
+/* INVITE CODES */
+.code-badge{font-family:'Space Mono',monospace;font-size:13px;color:var(--c);letter-spacing:3px;background:rgba(0,229,255,0.05);padding:4px 10px;border-radius:5px;border:1px solid rgba(0,229,255,0.15)}
 
-/* CONV LIST */
-.conv-item{display:flex;align-items:center;justify-content:space-between;padding:10px 0;border-bottom:1px solid rgba(255,255,255,0.03)}
-.conv-item:last-child{border-bottom:none}
+/* TIER MODAL */
+.modal-bg{display:none;position:fixed;inset:0;background:rgba(4,8,15,0.92);backdrop-filter:blur(12px);z-index:200;align-items:center;justify-content:center}
+.modal-bg.show{display:flex}
+.modal{background:var(--bg2);border:1px solid var(--border);border-radius:16px;padding:28px;width:100%;max-width:340px}
+.modal h3{font-family:'Orbitron',sans-serif;font-size:14px;color:var(--c);letter-spacing:2px;margin-bottom:20px}
+.modal-btns{display:flex;flex-direction:column;gap:8px}
+.tier-option{padding:12px 16px;border-radius:8px;cursor:pointer;display:flex;align-items:center;gap:10px;border:1px solid rgba(255,255,255,0.06);background:var(--bg3);transition:all .2s;font-size:13px}
+.tier-option:hover{border-color:rgba(0,229,255,0.3);background:rgba(0,229,255,0.05)}
+.tier-option.selected{border-color:var(--c);background:rgba(0,229,255,0.08)}
+.modal-footer{display:flex;gap:10px;margin-top:20px}
+.modal-footer button{flex:1;padding:10px;border-radius:8px;font-family:'Orbitron',sans-serif;font-size:10px;letter-spacing:1px;cursor:pointer;border:1px solid}
+.modal-cancel{background:transparent;border-color:rgba(255,255,255,0.1);color:rgba(200,223,240,0.4)}
+.modal-save{background:linear-gradient(135deg,var(--c),var(--c2));border-color:transparent;color:#04080f;font-weight:700}
 
-@media(max-width:768px){
-  .sidebar{display:none}
-  .main{padding:16px}
-  .user-row{grid-template-columns:1fr 100px}
-  .user-row > *:nth-child(2),.user-row > *:nth-child(3),.user-row > *:nth-child(4){display:none}
-}
+/* TOAST */
+.toast{position:fixed;bottom:24px;right:24px;background:var(--bg3);border:1px solid var(--border);border-radius:10px;padding:12px 18px;font-size:12px;color:#c8dff0;box-shadow:0 8px 30px rgba(0,0,0,0.5);z-index:1000;transform:translateX(120%);transition:transform .3s}
+.toast.show{transform:translateX(0)}
+.toast.success{border-color:rgba(0,229,160,0.3);color:var(--g)}
+.toast.error{border-color:rgba(255,45,107,0.3);color:var(--c3)}
+
+.empty-state{text-align:center;padding:40px;color:rgba(200,223,240,0.2);font-size:13px}
+.empty-state .ei{font-size:32px;display:block;margin-bottom:8px}
 </style>
 </head>
 <body>
 
-<div class="sidebar">
-  <div class="s-logo">
-    <h2>Libery<span>Audio</span></h2>
-    <div class="admin-tag">ADMIN PANEL</div>
-  </div>
-  <nav class="s-nav">
-    <button class="nav-btn active" onclick="nav('overview',this)">📊 Overview</button>
-    <button class="nav-btn" onclick="nav('users',this)">👥 Kelola Users</button>
-    <button class="nav-btn" onclick="nav('plans',this)">👑 Kelola Plan</button>
-  </nav>
-  <div class="s-bottom">
-    <a href="/dashboard" style="display:flex;align-items:center;gap:8px;padding:9px 12px;font-size:13px;font-weight:600;color:var(--muted);margin-bottom:4px">🏠 Dashboard User</a>
-    <button class="logout-btn" onclick="logout()">🚪 Logout</button>
+<!-- LOGIN -->
+<div id="loginPage">
+  <div class="login-box">
+    <div class="login-logo">⚡ XELLO ADMIN</div>
+    <div class="login-sub">PANEL ADMINISTRASI</div>
+    <div class="login-card">
+      <div class="lg">
+        <label>Username Admin</label>
+        <input type="text" id="adminUser" placeholder="admin"/>
+        <label>Password Admin</label>
+        <input type="password" id="adminPass" placeholder="••••••••" onkeydown="if(event.key==='Enter')doAdminLogin()"/>
+        <button onclick="doAdminLogin()">MASUK KE ADMIN →</button>
+      </div>
+      <div class="lg-err" id="loginErr"></div>
+    </div>
   </div>
 </div>
 
-<div class="main">
+<!-- MAIN -->
+<div id="mainApp">
+<div class="layout">
+  <!-- SIDEBAR -->
+  <aside class="sidebar">
+    <div class="sb-logo">
+      <div class="sb-logo-t">XELLO</div>
+      <div class="sb-logo-s">ADMIN PANEL</div>
+    </div>
+    <div class="sb-admin-badge">⚡ ADMINISTRATOR</div>
+    <nav class="sb-nav">
+      <a class="active" onclick="goPage('overview')" id="nav-overview"><span class="icon">📊</span>Overview</a>
+      <a onclick="goPage('users')" id="nav-users"><span class="icon">👥</span>Manajemen User</a>
+      <a onclick="goPage('invites')" id="nav-invites"><span class="icon">🎫</span>Invite Codes</a>
+      <a onclick="goPage('history')" id="nav-history"><span class="icon">📋</span>Upload History</a>
+    </nav>
+    <div class="sb-logout">
+      <button onclick="doLogout()">⏻ LOGOUT</button>
+    </div>
+  </aside>
 
-  <!-- OVERVIEW -->
-  <div class="page active" id="page-overview">
-    <div class="page-title">Overview</div>
-    <div class="page-sub">Statistik keseluruhan LiberyAudio</div>
+  <!-- CONTENT -->
+  <main class="main">
 
-    <div class="stats-row">
-      <div class="stat">
-        <div class="stat-label">TOTAL USER</div>
-        <div class="stat-value accent" id="statTotal">—</div>
+    <!-- OVERVIEW -->
+    <div class="page-section active" id="page-overview">
+      <div class="page-title">Overview</div>
+      <div class="page-sub">Statistik platform XELLO Studio</div>
+      <div class="stats-row" id="statsRow">
+        <div class="stat-card"><div class="stat-num" id="st-total">—</div><div class="stat-lbl">Total User</div></div>
+        <div class="stat-card"><div class="stat-num" id="st-trial" style="color:#ff9800">—</div><div class="stat-lbl">Trial</div></div>
+        <div class="stat-card"><div class="stat-num" id="st-beginner" style="color:#4fc3f7">—</div><div class="stat-lbl">Beginner</div></div>
+        <div class="stat-card"><div class="stat-num" id="st-pro">—</div><div class="stat-lbl">Pro</div></div>
+        <div class="stat-card"><div class="stat-num" id="st-uploads">—</div><div class="stat-lbl">Total Upload</div></div>
       </div>
-      <div class="stat">
-        <div class="stat-label">USER PRO AKTIF</div>
-        <div class="stat-value green" id="statPro">—</div>
-      </div>
-      <div class="stat">
-        <div class="stat-label">USER FREE</div>
-        <div class="stat-value" id="statFree">—</div>
-      </div>
-      <div class="stat">
-        <div class="stat-label">TOTAL KONVERSI</div>
-        <div class="stat-value yellow" id="statConv">—</div>
+      <div class="card">
+        <div class="card-title"><span>◈</span> UPLOAD TERBARU</div>
+        <div id="recentUploads"><div class="empty-state">Loading...</div></div>
       </div>
     </div>
 
-    <div class="card">
-      <div class="card-header"><span class="card-title">User Terbaru</span></div>
-      <div id="recentUsers">
-        <div class="empty"><div class="empty-icon">👥</div><div class="empty-title">Memuat...</div></div>
-      </div>
-    </div>
-  </div>
-
-  <!-- USERS -->
-  <div class="page" id="page-users">
-    <div class="page-title">Kelola Users</div>
-    <div class="page-sub">Lihat dan kelola semua user yang terdaftar</div>
-
-    <div class="search-bar">
-      <input class="search-input" id="searchInput" placeholder="🔍 Cari username atau email..." oninput="filterUsers()">
-      <button class="btn btn-outline" onclick="loadUsers()">↻ Refresh</button>
-    </div>
-
-    <div class="card">
-      <div class="user-row header">
-        <div>USER</div>
-        <div>PLAN</div>
-        <div>EXPIRY</div>
-        <div>KONVERSI</div>
-        <div>AKSI</div>
-      </div>
-      <div id="usersList">
-        <div class="empty"><div class="empty-icon">👥</div><div class="empty-title">Memuat users...</div></div>
-      </div>
-    </div>
-  </div>
-
-  <!-- PLANS -->
-  <div class="page" id="page-plans">
-    <div class="page-title">Kelola Plan</div>
-    <div class="page-sub">Aktifkan atau ubah plan user secara manual</div>
-
-    <div class="alert alert-info">
-      💡 Setelah user melakukan pembayaran, cari username mereka di bawah dan aktifkan plan sesuai paket yang dibeli.
-    </div>
-
-    <div class="card" style="margin-bottom:16px">
-      <div class="card-header"><span class="card-title">Aktifkan Plan Cepat</span></div>
-      <div class="card-body">
-        <div class="form-group">
-          <label class="form-label">USERNAME</label>
-          <input type="text" class="form-input" id="quickUsername" placeholder="Masukkan username user">
+    <!-- USERS -->
+    <div class="page-section" id="page-users">
+      <div class="page-title">Manajemen User</div>
+      <div class="page-sub">Kelola semua pengguna platform</div>
+      <div class="card">
+        <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:14px">
+          <div class="card-title" style="margin:0"><span>◈</span> DAFTAR USER</div>
+          <button onclick="loadUsers()" class="btn-sm btn-cyan">↻ REFRESH</button>
         </div>
-        <div style="font-size:12px;font-weight:700;color:var(--muted);letter-spacing:1px;margin-bottom:10px">PILIH PAKET</div>
-        <div class="plan-quick">
-          <div class="pq-btn free-btn" onclick="selectPlan('free',0,this)">
-            <div style="font-size:16px;margin-bottom:4px">🆓</div>
-            <div>Free</div>
-            <div style="color:var(--muted);font-size:10px;margin-top:2px">Reset ke free</div>
-          </div>
-          <div class="pq-btn" onclick="selectPlan('pro',7,this)">
-            <div style="font-size:16px;margin-bottom:4px">⚡</div>
-            <div>Pro 7 Hari</div>
-            <div style="color:var(--muted);font-size:10px;margin-top:2px">Rp 80.000</div>
-          </div>
-          <div class="pq-btn" onclick="selectPlan('pro',30,this)">
-            <div style="font-size:16px;margin-bottom:4px">👑</div>
-            <div>Pro 30 Hari</div>
-            <div style="color:var(--muted);font-size:10px;margin-top:2px">Rp 150.000</div>
-          </div>
+        <div style="overflow-x:auto" id="usersContainer">
+          <div class="empty-state">Loading...</div>
         </div>
-        <div style="font-size:12px;color:var(--muted);margin-bottom:16px" id="planPreview">— Belum ada paket dipilih —</div>
-        <button class="btn btn-primary" onclick="applyPlan()" id="applyPlanBtn" disabled>Aktifkan Plan</button>
       </div>
     </div>
 
-    <div class="card">
-      <div class="card-header"><span class="card-title">Semua User & Plan</span></div>
-      <div class="user-row header">
-        <div>USER</div>
-        <div>PLAN</div>
-        <div>EXPIRY</div>
-        <div>KONVERSI</div>
-        <div>AKSI CEPAT</div>
+    <!-- INVITES -->
+    <div class="page-section" id="page-invites">
+      <div class="page-title">Invite Codes</div>
+      <div class="page-sub">Buat dan kelola kode invite untuk upgrade tier</div>
+      <div class="card">
+        <div class="card-title"><span>◈</span> BUAT KODE BARU</div>
+        <div class="form-row">
+          <div class="form-group">
+            <label>Custom Code (kosongkan = auto)</label>
+            <input type="text" id="newCode" placeholder="XELLO-CUSTOM" style="text-transform:uppercase;letter-spacing:2px;font-family:Space Mono"/>
+          </div>
+          <div class="form-group">
+            <label>Tier</label>
+            <select id="newTier">
+              <option value="trial">Trial (3/bulan)</option>
+              <option value="beginner" selected>Beginner (50/bulan)</option>
+              <option value="pro">Pro (Unlimited)</option>
+            </select>
+          </div>
+          <div class="form-group">
+            <label>Max Uses (0 = unlimited)</label>
+            <input type="number" id="newMaxUses" value="1" min="0"/>
+          </div>
+          <div class="form-group">
+            <label>Expires (kosongkan = no expiry)</label>
+            <input type="date" id="newExpires"/>
+          </div>
+          <button class="action-btn" onclick="createInvite()">+ BUAT KODE</button>
+        </div>
       </div>
-      <div id="planUsersList">
-        <div class="empty"><div class="empty-icon">👥</div><div class="empty-title">Memuat...</div></div>
+      <div class="card">
+        <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:14px">
+          <div class="card-title" style="margin:0"><span>◈</span> SEMUA KODE</div>
+          <button onclick="loadInvites()" class="btn-sm btn-cyan">↻ REFRESH</button>
+        </div>
+        <div style="overflow-x:auto" id="invitesContainer">
+          <div class="empty-state">Loading...</div>
+        </div>
       </div>
     </div>
-  </div>
 
+    <!-- HISTORY -->
+    <div class="page-section" id="page-history">
+      <div class="page-title">Upload History</div>
+      <div class="page-sub">100 upload terakhir dari semua user</div>
+      <div class="card">
+        <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:14px">
+          <div class="card-title" style="margin:0"><span>◈</span> LOG UPLOAD</div>
+          <button onclick="loadAdminHistory()" class="btn-sm btn-cyan">↻ REFRESH</button>
+        </div>
+        <div style="overflow-x:auto" id="historyContainer">
+          <div class="empty-state">Loading...</div>
+        </div>
+      </div>
+    </div>
+
+  </main>
+</div>
 </div>
 
-<!-- MODAL: EDIT USER -->
-<div class="modal-overlay" id="editModal">
+<!-- TIER MODAL -->
+<div class="modal-bg" id="tierModal">
   <div class="modal">
-    <div class="modal-title">
-      <span>Edit User: <span id="editModalName" class="text-accent">—</span></span>
-      <span class="modal-close" onclick="closeModal('editModal')">✕</span>
+    <h3>UBAH TIER USER</h3>
+    <div class="modal-btns" id="tierOptions">
+      <div class="tier-option" onclick="selectTier('trial')"><span class="tier-badge tier-trial">TRIAL</span> 3 upload/bulan</div>
+      <div class="tier-option" onclick="selectTier('beginner')"><span class="tier-badge tier-beginner">BEGINNER</span> 50 upload/bulan</div>
+      <div class="tier-option" onclick="selectTier('pro')"><span class="tier-badge tier-pro">PRO</span> Unlimited upload</div>
     </div>
-
-    <input type="hidden" id="editUsername">
-
-    <div class="form-group">
-      <label class="form-label">PLAN</label>
-      <select class="form-input" id="editPlan" onchange="toggleEditDays()">
-        <option value="free">Free</option>
-        <option value="pro">Pro</option>
-      </select>
-    </div>
-    <div class="form-group" id="editDaysGroup">
-      <label class="form-label">DURASI (HARI)</label>
-      <div class="plan-quick" style="margin-bottom:8px">
-        <div class="pq-btn" onclick="setEditDays(7,this)">7 hari</div>
-        <div class="pq-btn" onclick="setEditDays(30,this)">30 hari</div>
-        <div class="pq-btn" onclick="setEditDays(90,this)">90 hari</div>
-      </div>
-      <input type="number" class="form-input" id="editDays" placeholder="Atau masukkan manual (hari)" min="1">
-    </div>
-    <div class="form-group">
-      <label class="form-label">ROLE</label>
-      <select class="form-input" id="editRole">
-        <option value="user">User</option>
-        <option value="admin">Admin</option>
-      </select>
-    </div>
-
-    <div style="display:flex;gap:10px;margin-top:8px">
-      <button class="btn btn-primary" style="flex:1" onclick="saveEdit()">💾 Simpan</button>
-      <button class="btn btn-outline" onclick="closeModal('editModal')">Batal</button>
+    <div class="modal-footer">
+      <button class="modal-cancel" onclick="closeTierModal()">BATAL</button>
+      <button class="modal-save" onclick="saveTier()">SIMPAN</button>
     </div>
   </div>
 </div>
 
-<!-- MODAL: RESET PASSWORD -->
-<div class="modal-overlay" id="resetModal">
-  <div class="modal">
-    <div class="modal-title">
-      <span>Reset Password: <span id="resetModalName" class="text-accent">—</span></span>
-      <span class="modal-close" onclick="closeModal('resetModal')">✕</span>
-    </div>
-    <input type="hidden" id="resetUsername">
-    <div class="form-group">
-      <label class="form-label">PASSWORD BARU</label>
-      <input type="text" class="form-input" id="newPassword" placeholder="Masukkan password baru">
-    </div>
-    <div style="display:flex;gap:10px">
-      <button class="btn btn-primary" style="flex:1" onclick="doResetPassword()">🔑 Reset Password</button>
-      <button class="btn btn-outline" onclick="closeModal('resetModal')">Batal</button>
-    </div>
-  </div>
-</div>
-
-<!-- MODAL: KONFIRMASI DELETE -->
-<div class="modal-overlay" id="deleteModal">
-  <div class="modal">
-    <div class="modal-title">
-      <span>Hapus User</span>
-      <span class="modal-close" onclick="closeModal('deleteModal')">✕</span>
-    </div>
-    <input type="hidden" id="deleteUsername">
-    <div class="alert alert-danger">
-      ⚠️ Yakin ingin menghapus user <strong id="deleteModalName"></strong>? Semua data riwayat konversi akan hilang permanen!
-    </div>
-    <div style="display:flex;gap:10px">
-      <button class="btn btn-danger" style="flex:1" onclick="doDelete()">🗑️ Hapus Permanen</button>
-      <button class="btn btn-outline" onclick="closeModal('deleteModal')">Batal</button>
-    </div>
-  </div>
-</div>
-
-<!-- MODAL: DETAIL USER -->
-<div class="modal-overlay" id="detailModal">
-  <div class="modal" style="max-width:520px">
-    <div class="modal-title">
-      <span>Detail User: <span id="detailModalName" class="text-accent">—</span></span>
-      <span class="modal-close" onclick="closeModal('detailModal')">✕</span>
-    </div>
-    <div id="detailContent"></div>
-  </div>
-</div>
-
-<!-- TOAST -->
 <div class="toast" id="toast"></div>
 
 <script>
-let allUsers = []
-let selectedPlan = null
-let selectedDays = 0
+let selectedUserId = null;
+let selectedTier = null;
 
+// =============================================
+// ADMIN AUTH
+// =============================================
+async function doAdminLogin(){
+  const username = document.getElementById('adminUser').value;
+  const password = document.getElementById('adminPass').value;
+  const r = await fetch('/api/admin/login',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({username,password})});
+  const d = await r.json();
+  if(d.success){
+    document.getElementById('loginPage').style.display='none';
+    document.getElementById('mainApp').style.display='block';
+    loadOverview();
+    loadUsers();
+  } else {
+    document.getElementById('loginErr').textContent = d.error || 'Login gagal';
+  }
+}
+
+async function doLogout(){
+  await fetch('/api/auth/logout',{method:'POST'});
+  location.reload();
+}
+
+// =============================================
 // NAV
-function nav(page, btn) {
-  document.querySelectorAll('.page').forEach(p => p.classList.remove('active'))
-  document.querySelectorAll('.nav-btn').forEach(b => b.classList.remove('active'))
-  document.getElementById('page-' + page).classList.add('active')
-  if (btn) btn.classList.add('active')
-  if (page === 'users')    loadUsers()
-  if (page === 'plans')    loadPlanUsers()
-  if (page === 'overview') loadStats()
+// =============================================
+function goPage(page){
+  document.querySelectorAll('.page-section').forEach(s=>s.classList.remove('active'));
+  document.querySelectorAll('.sb-nav a').forEach(a=>a.classList.remove('active'));
+  document.getElementById('page-'+page).classList.add('active');
+  document.getElementById('nav-'+page).classList.add('active');
+  if(page==='users') loadUsers();
+  if(page==='invites') loadInvites();
+  if(page==='history') loadAdminHistory();
+  if(page==='overview') loadOverview();
 }
 
-// TOAST
-function toast(msg, type = 'success') {
-  const t = document.getElementById('toast')
-  t.textContent = msg
-  t.className = `toast ${type} show`
-  setTimeout(() => t.classList.remove('show'), 3200)
-}
-
-async function logout() {
-  await fetch('/api/logout', { method: 'POST' })
-  window.location.href = '/login'
-}
-
-// ────────────────────────────────
+// =============================================
 // OVERVIEW
-// ────────────────────────────────
-async function loadStats() {
-  const res  = await fetch('/api/admin/stats')
-  const data = await res.json()
-  document.getElementById('statTotal').textContent = data.totalUsers || 0
-  document.getElementById('statPro').textContent   = data.proUsers || 0
-  document.getElementById('statFree').textContent  = data.freeUsers || 0
-  document.getElementById('statConv').textContent  = data.totalConversions || 0
+// =============================================
+async function loadOverview(){
+  try{
+    const r = await fetch('/api/admin/stats');
+    const d = await r.json();
+    document.getElementById('st-total').textContent = d.totalUsers;
+    document.getElementById('st-uploads').textContent = d.totalUploads;
+    const byTier = {};
+    d.byTier.forEach(t=>byTier[t.tier]=t.c);
+    document.getElementById('st-trial').textContent = byTier.trial||0;
+    document.getElementById('st-beginner').textContent = byTier.beginner||0;
+    document.getElementById('st-pro').textContent = byTier.pro||0;
 
-  const usersRes  = await fetch('/api/admin/users')
-  const usersData = await usersRes.json()
-  const recent = [...(usersData.users || [])].sort((a,b) => new Date(b.createdAt) - new Date(a.createdAt)).slice(0,5)
-
-  if (!recent.length) return
-  document.getElementById('recentUsers').innerHTML = `
-    <table class="table">
-      <thead><tr><th>USERNAME</th><th>PLAN</th><th>ROBLOX</th><th>DAFTAR</th></tr></thead>
-      <tbody>${recent.map(u => `
-        <tr>
-          <td><div style="font-weight:700">${u.username}</div><div class="text-muted" style="font-size:11px">${u.email}</div></td>
-          <td>${planBadge(u)}</td>
-          <td>${u.robloxConnected ? '<span class="badge badge-green">● Terhubung</span>' : '<span class="badge badge-red">Belum</span>'}</td>
-          <td class="text-muted" style="font-size:11px">${new Date(u.createdAt).toLocaleDateString('id-ID')}</td>
-        </tr>`).join('')}
-      </tbody>
-    </table>`
+    const ru = document.getElementById('recentUploads');
+    if(!d.recentUploads.length){ru.innerHTML='<div class="empty-state"><span class="ei">📭</span>Belum ada upload</div>';return;}
+    ru.innerHTML=`<div style="overflow-x:auto"><table class="data-table">
+      <thead><tr><th>User</th><th>File</th><th>Asset ID</th><th>Status</th><th>Waktu</th></tr></thead>
+      <tbody>${d.recentUploads.map(h=>`<tr>
+        <td>${h.username||'—'}</td>
+        <td style="max-width:160px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap">${h.filename}</td>
+        <td style="font-family:Space Mono;font-size:11px;color:var(--c)">${h.asset_id||'—'}</td>
+        <td><span style="font-size:10px;padding:2px 7px;border-radius:4px;${h.status==='SUCCESS'?'background:rgba(0,229,160,0.1);color:var(--g)':'background:rgba(255,45,107,0.1);color:var(--c3)'}">${h.status}</span></td>
+        <td style="font-size:11px;color:rgba(200,223,240,0.3);font-family:Space Mono">${h.created_at?h.created_at.slice(0,16).replace('T',' '):'—'}</td>
+      </tr>`).join('')}</tbody>
+    </table></div>`;
+  }catch(e){console.error(e);}
 }
 
-// ────────────────────────────────
+// =============================================
 // USERS
-// ────────────────────────────────
-async function loadUsers() {
-  const res  = await fetch('/api/admin/users')
-  const data = await res.json()
-  allUsers   = data.users || []
-  renderUsers(allUsers)
+// =============================================
+async function loadUsers(){
+  const c = document.getElementById('usersContainer');
+  c.innerHTML='<div class="empty-state">Loading...</div>';
+  try{
+    const r = await fetch('/api/admin/users');
+    const users = await r.json();
+    if(!users.length){c.innerHTML='<div class="empty-state"><span class="ei">👥</span>Belum ada user</div>';return;}
+    c.innerHTML=`<table class="data-table">
+      <thead><tr><th>Username</th><th>Tier</th><th>Upload Bulan</th><th>Total</th><th>Status</th><th>Roblox</th><th>Bergabung</th><th>Aksi</th></tr></thead>
+      <tbody>${users.map(u=>`<tr>
+        <td><strong style="color:#fff">${u.username}</strong>${u.email?`<br><span style="font-size:10px;color:rgba(200,223,240,0.3)">${u.email}</span>`:''}</td>
+        <td><span class="tier-badge tier-${u.tier}">${u.tier.toUpperCase()}</span></td>
+        <td style="font-family:Space Mono;color:var(--c)">${u.uploads_this_month}/${u.tier_limit}</td>
+        <td style="font-family:Space Mono">${u.total_uploads}</td>
+        <td>${u.is_active?'<span class="status-on">● Aktif</span>':'<span class="status-off">● Nonaktif</span>'}</td>
+        <td style="font-size:11px">${u.has_api_key?'<span style="color:var(--g)">✓ Terhubung</span>':'<span style="color:rgba(200,223,240,0.3)">✗ Belum</span>'}</td>
+        <td style="font-size:10px;color:rgba(200,223,240,0.3);font-family:Space Mono">${u.created_at?u.created_at.slice(0,10):'—'}</td>
+        <td>
+          <div style="display:flex;gap:5px;flex-wrap:wrap">
+            <button class="btn-sm btn-cyan" onclick="openTierModal('${u.id}','${u.tier}')">TIER</button>
+            <button class="btn-sm btn-orange" onclick="toggleUser('${u.id}')">${u.is_active?'SUSPEND':'AKTIFKAN'}</button>
+            <button class="btn-sm btn-red" onclick="deleteUser('${u.id}','${u.username}')">HAPUS</button>
+          </div>
+        </td>
+      </tr>`).join('')}</tbody>
+    </table>`;
+  }catch(e){c.innerHTML='<div class="empty-state">Error loading</div>';}
 }
 
-function filterUsers() {
-  const q = document.getElementById('searchInput').value.toLowerCase()
-  renderUsers(allUsers.filter(u => u.username.includes(q) || (u.email||'').includes(q)))
+function openTierModal(userId, currentTier){
+  selectedUserId = userId;
+  selectedTier = currentTier;
+  document.querySelectorAll('.tier-option').forEach(o=>o.classList.remove('selected'));
+  selectTier(currentTier);
+  document.getElementById('tierModal').classList.add('show');
 }
 
-function planBadge(u) {
-  if (!u.plan || u.plan === 'free') return `<span class="badge badge-free">Free</span>`
-  if (u.plan === 'pro' && u.active)  return `<span class="badge badge-pro">⚡ Pro</span>`
-  if (u.plan === 'pro' && !u.active) return `<span class="badge badge-yellow">⏰ Expired</span>`
-  return `<span class="badge badge-free">${u.plan}</span>`
+function selectTier(tier){
+  selectedTier = tier;
+  document.querySelectorAll('.tier-option').forEach(o=>o.classList.remove('selected'));
+  const opts = document.querySelectorAll('.tier-option');
+  const tiers = ['trial','beginner','pro'];
+  const idx = tiers.indexOf(tier);
+  if(opts[idx]) opts[idx].classList.add('selected');
 }
 
-function expiryText(u) {
-  if (!u.planExpiry) return '<span class="text-muted">—</span>'
-  const d   = new Date(u.planExpiry)
-  const now = new Date()
-  const diff = Math.ceil((d - now) / 86400000)
-  if (diff < 0) return `<span class="text-red" style="font-size:11px">Expired</span>`
-  return `<span style="font-size:11px;color:${diff<=3?'var(--yellow)':'var(--text)'}">
-    ${d.toLocaleDateString('id-ID')} <span class="text-muted">(${diff}h)</span></span>`
+function closeTierModal(){document.getElementById('tierModal').classList.remove('show');}
+
+async function saveTier(){
+  if(!selectedUserId||!selectedTier)return;
+  const r = await fetch(`/api/admin/users/${selectedUserId}/tier`,{method:'PATCH',headers:{'Content-Type':'application/json'},body:JSON.stringify({tier:selectedTier})});
+  const d = await r.json();
+  if(d.success){toast('Tier berhasil diubah','success');closeTierModal();loadUsers();}
+  else toast('Gagal mengubah tier','error');
 }
 
-function renderUsers(users) {
-  if (!users.length) {
-    document.getElementById('usersList').innerHTML = `<div class="empty"><div class="empty-icon">🔍</div><div class="empty-title">Tidak ada user</div></div>`
-    return
-  }
-  document.getElementById('usersList').innerHTML = users.map(u => `
-    <div class="user-row">
-      <div>
-        <div class="u-name">${u.username} ${u.role==='admin'?'<span class="badge badge-red" style="font-size:9px">ADMIN</span>':''}</div>
-        <div class="u-email">${u.email || '—'}</div>
-      </div>
-      <div>${planBadge(u)}</div>
-      <div>${expiryText(u)}</div>
-      <div><span class="mono" style="font-size:12px">${u.totalConversions || 0}</span></div>
-      <div class="u-actions">
-        <button class="btn btn-outline btn-sm" onclick='openDetail(${JSON.stringify(u)})'>👁</button>
-        <button class="btn btn-outline btn-sm" onclick='openEdit(${JSON.stringify(u)})'>✏️</button>
-        <button class="btn btn-outline btn-sm" onclick='openReset("${u.username}")'>🔑</button>
-        <button class="btn btn-danger btn-sm" onclick='openDelete("${u.username}")'>🗑</button>
-      </div>
-    </div>`).join('')
+async function toggleUser(userId){
+  const r = await fetch(`/api/admin/users/${userId}/toggle`,{method:'PATCH'});
+  const d = await r.json();
+  if(d.success){toast('Status user diperbarui','success');loadUsers();}
 }
 
-// ────────────────────────────────
-// PLAN MANAGEMENT
-// ────────────────────────────────
-async function loadPlanUsers() {
-  const res  = await fetch('/api/admin/users')
-  const data = await res.json()
-  const users = (data.users || []).sort((a,b) => {
-    if (a.plan === 'pro' && b.plan !== 'pro') return -1
-    if (b.plan === 'pro' && a.plan !== 'pro') return 1
-    return 0
-  })
-
-  if (!users.length) return
-  document.getElementById('planUsersList').innerHTML = users.map(u => `
-    <div class="user-row">
-      <div>
-        <div class="u-name">${u.username}</div>
-        <div class="u-email">${u.email || '—'}</div>
-      </div>
-      <div>${planBadge(u)}</div>
-      <div>${expiryText(u)}</div>
-      <div><span class="mono" style="font-size:12px">${u.totalConversions || 0}</span></div>
-      <div class="u-actions">
-        <button class="btn btn-success btn-sm" onclick='quickPlan("${u.username}","pro",7)'>+7hr</button>
-        <button class="btn btn-success btn-sm" onclick='quickPlan("${u.username}","pro",30)'>+30hr</button>
-        <button class="btn btn-danger btn-sm" onclick='quickPlan("${u.username}","free",0)'>Free</button>
-      </div>
-    </div>`).join('')
+async function deleteUser(userId, username){
+  if(!confirm(`Yakin hapus user "${username}"? Ini tidak bisa dibatalkan!`))return;
+  const r = await fetch(`/api/admin/users/${userId}`,{method:'DELETE'});
+  const d = await r.json();
+  if(d.success){toast('User berhasil dihapus','success');loadUsers();}
 }
 
-// Quick plan dari tabel
-async function quickPlan(username, plan, days) {
-  const res  = await fetch('/api/admin/set-plan', {
-    method: 'POST',
-    headers: { 'Content-Type': 'application/json' },
-    body: JSON.stringify({ username, plan, days })
-  })
-  const data = await res.json()
-  if (data.success) {
-    toast(`✅ Plan ${username} diubah ke ${plan}${days ? ' ('+days+' hari)' : ''}`)
-    loadPlanUsers()
-  } else {
-    toast('❌ ' + data.error, 'error')
-  }
+// =============================================
+// INVITE CODES
+// =============================================
+async function createInvite(){
+  const body = {
+    tier: document.getElementById('newTier').value,
+    max_uses: parseInt(document.getElementById('newMaxUses').value)||1,
+    expires_at: document.getElementById('newExpires').value||null,
+    custom_code: document.getElementById('newCode').value.trim()||null
+  };
+  const r = await fetch('/api/admin/invites',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify(body)});
+  const d = await r.json();
+  if(d.success){
+    toast(`Kode "${d.code}" berhasil dibuat!`,'success');
+    document.getElementById('newCode').value='';
+    loadInvites();
+  } else toast(d.error||'Gagal','error');
 }
 
-// Plan selector di form cepat
-function selectPlan(plan, days, el) {
-  document.querySelectorAll('.plan-quick .pq-btn').forEach(b => b.classList.remove('selected'))
-  el.classList.add('selected')
-  selectedPlan = plan
-  selectedDays = days
-
-  const prev = document.getElementById('planPreview')
-  if (plan === 'free') {
-    prev.innerHTML = `<span class="text-muted">Reset ke Free — limit 3x/hari</span>`
-  } else {
-    const exp = new Date(); exp.setDate(exp.getDate() + days)
-    prev.innerHTML = `<span class="text-accent">⚡ Pro ${days} hari</span> — aktif hingga <strong>${exp.toLocaleDateString('id-ID')}</strong>`
-  }
-  document.getElementById('applyPlanBtn').disabled = false
+async function loadInvites(){
+  const c = document.getElementById('invitesContainer');
+  c.innerHTML='<div class="empty-state">Loading...</div>';
+  try{
+    const r = await fetch('/api/admin/invites');
+    const codes = await r.json();
+    if(!codes.length){c.innerHTML='<div class="empty-state"><span class="ei">🎫</span>Belum ada kode</div>';return;}
+    c.innerHTML=`<table class="data-table">
+      <thead><tr><th>Kode</th><th>Tier</th><th>Penggunaan</th><th>Expires</th><th>Status</th><th>Dibuat</th><th>Aksi</th></tr></thead>
+      <tbody>${codes.map(c=>`<tr>
+        <td>
+          <span class="code-badge">${c.code}</span>
+          <button onclick="copyText('${c.code}')" class="btn-sm btn-cyan" style="margin-left:6px">COPY</button>
+        </td>
+        <td><span class="tier-badge tier-${c.tier}">${c.tier.toUpperCase()}</span></td>
+        <td style="font-family:Space Mono;color:var(--c)">${c.uses}/${c.max_uses===0?'∞':c.max_uses}</td>
+        <td style="font-size:11px;color:rgba(200,223,240,0.35)">${c.expires_at||'Tidak ada'}</td>
+        <td>${c.is_active?'<span class="status-on">● Aktif</span>':'<span class="status-off">● Tidak Aktif</span>'}</td>
+        <td style="font-size:10px;color:rgba(200,223,240,0.3);font-family:Space Mono">${c.created_at?c.created_at.slice(0,10):'—'}</td>
+        <td><button class="btn-sm btn-red" onclick="deleteInvite('${c.id}')">HAPUS</button></td>
+      </tr>`).join('')}</tbody>
+    </table>`;
+  }catch(e){c.innerHTML='<div class="empty-state">Error</div>';}
 }
 
-async function applyPlan() {
-  const username = document.getElementById('quickUsername').value.trim()
-  if (!username)    { toast('Masukkan username!', 'error'); return }
-  if (!selectedPlan){ toast('Pilih paket dulu!', 'error'); return }
-
-  const res  = await fetch('/api/admin/set-plan', {
-    method: 'POST',
-    headers: { 'Content-Type': 'application/json' },
-    body: JSON.stringify({ username, plan: selectedPlan, days: selectedDays })
-  })
-  const data = await res.json()
-  if (data.success) {
-    toast(`✅ Plan berhasil diaktifkan untuk ${username}!`)
-    document.getElementById('quickUsername').value = ''
-    document.querySelectorAll('.plan-quick .pq-btn').forEach(b => b.classList.remove('selected'))
-    document.getElementById('planPreview').textContent = '— Belum ada paket dipilih —'
-    document.getElementById('applyPlanBtn').disabled = true
-    selectedPlan = null
-    loadPlanUsers()
-  } else {
-    toast('❌ ' + (data.error || 'Gagal'), 'error')
-  }
+async function deleteInvite(id){
+  if(!confirm('Hapus kode invite ini?'))return;
+  const r = await fetch('/api/admin/invites/'+id,{method:'DELETE'});
+  const d = await r.json();
+  if(d.success){toast('Kode dihapus','success');loadInvites();}
 }
 
-// ────────────────────────────────
-// MODALS
-// ────────────────────────────────
-function openModal(id) { document.getElementById(id).classList.add('show') }
-function closeModal(id) { document.getElementById(id).classList.remove('show') }
-
-function openDetail(u) {
-  document.getElementById('detailModalName').textContent = u.username
-  const exp = u.planExpiry ? new Date(u.planExpiry).toLocaleString('id-ID') : '—'
-  const diff = u.planExpiry ? Math.ceil((new Date(u.planExpiry) - new Date()) / 86400000) : 0
-
-  document.getElementById('detailContent').innerHTML = `
-    <div style="display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-bottom:16px">
-      <div style="background:var(--bg);border-radius:8px;padding:12px">
-        <div style="font-size:10px;font-weight:700;color:var(--muted);letter-spacing:1px;margin-bottom:6px">USERNAME</div>
-        <div style="font-weight:700">${u.username}</div>
-      </div>
-      <div style="background:var(--bg);border-radius:8px;padding:12px">
-        <div style="font-size:10px;font-weight:700;color:var(--muted);letter-spacing:1px;margin-bottom:6px">EMAIL</div>
-        <div style="font-size:13px">${u.email || '—'}</div>
-      </div>
-      <div style="background:var(--bg);border-radius:8px;padding:12px">
-        <div style="font-size:10px;font-weight:700;color:var(--muted);letter-spacing:1px;margin-bottom:6px">PLAN</div>
-        <div>${planBadge(u)}</div>
-      </div>
-      <div style="background:var(--bg);border-radius:8px;padding:12px">
-        <div style="font-size:10px;font-weight:700;color:var(--muted);letter-spacing:1px;margin-bottom:6px">EXPIRE</div>
-        <div style="font-size:12px">${exp}${diff > 0 ? ` <span class="text-muted">(${diff} hari lagi)</span>` : ''}</div>
-      </div>
-      <div style="background:var(--bg);border-radius:8px;padding:12px">
-        <div style="font-size:10px;font-weight:700;color:var(--muted);letter-spacing:1px;margin-bottom:6px">ROBLOX USER ID</div>
-        <div class="mono" style="font-size:12px;color:var(--accent)">${u.robloxUserId || '—'}</div>
-      </div>
-      <div style="background:var(--bg);border-radius:8px;padding:12px">
-        <div style="font-size:10px;font-weight:700;color:var(--muted);letter-spacing:1px;margin-bottom:6px">TOTAL KONVERSI</div>
-        <div class="mono" style="font-size:18px;font-weight:800;color:var(--accent)">${u.totalConversions || 0}</div>
-      </div>
-    </div>
-    <div style="font-size:10px;font-weight:700;color:var(--muted);letter-spacing:1px;margin-bottom:8px">ROLE</div>
-    <div style="margin-bottom:16px">${u.role === 'admin' ? '<span class="badge badge-red">ADMIN</span>' : '<span class="badge badge-free">USER</span>'}</div>
-    <div style="font-size:10px;font-weight:700;color:var(--muted);letter-spacing:1px;margin-bottom:8px">DAFTAR PADA</div>
-    <div class="text-muted" style="font-size:12px">${u.createdAt ? new Date(u.createdAt).toLocaleString('id-ID') : '—'}</div>
-    <div style="display:flex;gap:8px;margin-top:20px">
-      <button class="btn btn-primary" style="flex:1" onclick="closeModal('detailModal');openEdit(${JSON.stringify(u).replace(/"/g,'&quot;')})">✏️ Edit User</button>
-      <button class="btn btn-outline" onclick="closeModal('detailModal')">Tutup</button>
-    </div>`
-  openModal('detailModal')
+// =============================================
+// HISTORY
+// =============================================
+async function loadAdminHistory(){
+  const c = document.getElementById('historyContainer');
+  c.innerHTML='<div class="empty-state">Loading...</div>';
+  try{
+    const r = await fetch('/api/admin/history');
+    const data = await r.json();
+    if(!data.length){c.innerHTML='<div class="empty-state"><span class="ei">📭</span>Belum ada upload</div>';return;}
+    c.innerHTML=`<table class="data-table">
+      <thead><tr><th>User</th><th>File</th><th>Asset ID</th><th>Status</th><th>Waktu</th></tr></thead>
+      <tbody>${data.map(h=>`<tr>
+        <td><strong>${h.username||'?'}</strong></td>
+        <td style="max-width:180px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap">${h.filename}</td>
+        <td style="font-family:Space Mono;font-size:11px;color:var(--c)">${h.asset_id||'—'}</td>
+        <td><span style="font-size:10px;padding:2px 7px;border-radius:4px;${h.status==='SUCCESS'?'background:rgba(0,229,160,0.1);color:var(--g)':'background:rgba(255,45,107,0.1);color:var(--c3)'}">${h.status}</span></td>
+        <td style="font-size:10px;color:rgba(200,223,240,0.3);font-family:Space Mono">${h.created_at?h.created_at.slice(0,16).replace('T',' '):'—'}</td>
+      </tr>`).join('')}</tbody>
+    </table>`;
+  }catch(e){c.innerHTML='<div class="empty-state">Error</div>';}
 }
 
-function openEdit(u) {
-  document.getElementById('editModalName').textContent = u.username
-  document.getElementById('editUsername').value       = u.username
-  document.getElementById('editPlan').value           = u.plan || 'free'
-  document.getElementById('editRole').value           = u.role || 'user'
-  toggleEditDays()
-  openModal('editModal')
+// =============================================
+// UTILS
+// =============================================
+function copyText(text){
+  navigator.clipboard.writeText(text).then(()=>toast('Disalin!','success'));
 }
 
-function toggleEditDays() {
-  const isPro = document.getElementById('editPlan').value === 'pro'
-  document.getElementById('editDaysGroup').style.display = isPro ? 'block' : 'none'
+function toast(msg, type=''){
+  const el = document.getElementById('toast');
+  el.textContent=msg;
+  el.className='toast '+type+' show';
+  setTimeout(()=>el.classList.remove('show'),3000);
 }
-
-function setEditDays(days, el) {
-  document.querySelectorAll('#editDaysGroup .pq-btn').forEach(b => b.classList.remove('selected'))
-  el.classList.add('selected')
-  document.getElementById('editDays').value = days
-}
-
-async function saveEdit() {
-  const username = document.getElementById('editUsername').value
-  const plan     = document.getElementById('editPlan').value
-  const role     = document.getElementById('editRole').value
-  const days     = parseInt(document.getElementById('editDays').value) || 30
-
-  // Set plan
-  const r1 = await fetch('/api/admin/set-plan', {
-    method: 'POST', headers: {'Content-Type':'application/json'},
-    body: JSON.stringify({ username, plan, days })
-  })
-  // Set role
-  const r2 = await fetch('/api/admin/set-role', {
-    method: 'POST', headers: {'Content-Type':'application/json'},
-    body: JSON.stringify({ username, role })
-  })
-
-  const d1 = await r1.json()
-  const d2 = await r2.json()
-
-  if (d1.success && d2.success) {
-    toast(`✅ User ${username} berhasil diupdate`)
-    closeModal('editModal')
-    loadUsers()
-    loadPlanUsers()
-    loadStats()
-  } else {
-    toast('❌ ' + (d1.error || d2.error || 'Gagal'), 'error')
-  }
-}
-
-function openReset(username) {
-  document.getElementById('resetModalName').textContent = username
-  document.getElementById('resetUsername').value        = username
-  document.getElementById('newPassword').value          = ''
-  openModal('resetModal')
-}
-
-async function doResetPassword() {
-  const username    = document.getElementById('resetUsername').value
-  const newPassword = document.getElementById('newPassword').value.trim()
-  if (!newPassword || newPassword.length < 6) {
-    toast('Password minimal 6 karakter!', 'error'); return
-  }
-
-  const res  = await fetch('/api/admin/reset-password', {
-    method: 'POST', headers: {'Content-Type':'application/json'},
-    body: JSON.stringify({ username, newPassword })
-  })
-  const data = await res.json()
-  if (data.success) {
-    toast(`✅ Password ${username} berhasil direset`)
-    closeModal('resetModal')
-  } else {
-    toast('❌ ' + data.error, 'error')
-  }
-}
-
-function openDelete(username) {
-  document.getElementById('deleteModalName').textContent = username
-  document.getElementById('deleteUsername').value        = username
-  openModal('deleteModal')
-}
-
-async function doDelete() {
-  const username = document.getElementById('deleteUsername').value
-  const res  = await fetch('/api/admin/user/' + username, { method: 'DELETE' })
-  const data = await res.json()
-  if (data.success) {
-    toast(`✅ User ${username} berhasil dihapus`)
-    closeModal('deleteModal')
-    loadUsers()
-    loadStats()
-  } else {
-    toast('❌ ' + data.error, 'error')
-  }
-}
-
-// Close modal on overlay click
-document.querySelectorAll('.modal-overlay').forEach(o => {
-  o.addEventListener('click', e => { if (e.target === o) o.classList.remove('show') })
-})
-
-// INIT
-loadStats()
 </script>
 </body>
 </html>

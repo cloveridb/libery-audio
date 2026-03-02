@@ -1,150 +1,120 @@
-# LiberyAudio Simple — Setup Guide
+# ⚡ XELLO STUDIO v2.0 - Roblox Audio Uploader SaaS
 
-## File Structure
-```
-libery-simple/
-├── server.js              ← Backend utama
-├── package.json
-├── .env.example           ← Copy ke .env dan isi
-├── db.json                ← Database auto-dibuat saat pertama run
-└── public/
-    ├── index.html         ← Landing page
-    ├── login.html         ← Halaman login
-    ├── register.html      ← Halaman daftar
-    ├── dashboard.html     ← Dashboard user
-    ├── admin.html         ← Admin panel
-    └── css/
-        └── style.css      ← Shared styles
-```
+## 📋 FITUR
+- ✅ Landing page profesional
+- ✅ Register/Login dengan username & password
+- ✅ Sistem tier: Trial (3) / Beginner (50) / Pro (Unlimited) upload/bulan
+- ✅ Upload audio bulk ke Roblox (Personal & Group)
+- ✅ Audio preview + waveform visualizer
+- ✅ Tempo & pitch processor
+- ✅ Kode invite untuk upgrade tier
+- ✅ Admin panel lengkap (manage user, buat kode invite)
+- ✅ Database SQLite (tidak perlu setup eksternal)
 
 ---
 
-## Langkah Setup
+## 🚀 CARA INSTALL DI DANBOT HOSTING
 
-### 1. Install Node.js (jika belum ada)
-```bash
-# Ubuntu/Debian
-curl -fsSL https://deb.nodesource.com/setup_20.x | sudo -E bash -
-sudo apt-get install -y nodejs
+### Langkah 1: Upload file
+Upload semua file ke server lewat tab **Files** di Pterodactyl panel.
 
-# Cek versi
-node -v
-npm -v
+Struktur folder yang harus ada:
+```
+/home/container/
+├── server.js
+├── package.json
+├── .env
+├── public/
+│   ├── index.html
+│   ├── dashboard.html
+│   └── admin.html
+└── data/          (akan dibuat otomatis)
 ```
 
-### 2. Upload & Install
-```bash
-# Extract zip
-unzip libery-simple.zip
-cd libery-simple
+### Langkah 2: Edit file .env
+Buka file `.env` dan sesuaikan:
 
-# Install dependencies
+```env
+PORT=1179
+SESSION_SECRET=ganti_dengan_string_acak_panjang_ini
+
+ADMIN_USERNAME=admin
+ADMIN_PASSWORD=password_admin_kamu_disini
+
+TIER_TRIAL_LIMIT=3
+TIER_BEGINNER_LIMIT=50
+TIER_PRO_LIMIT=999999
+```
+
+### Langkah 3: Install dependencies
+Di console Pterodactyl, jalankan:
+```bash
 npm install
 ```
 
-### 3. Setup .env
-```bash
-cp .env.example .env
-nano .env
-```
-Isi nilainya:
-```
-SESSION_SECRET=random-string-panjang-bebas-isi-apa-saja
-ENCRYPT_KEY=tepat32karaktersajatidakkurang!!
-ADMIN_SEED_SECRET=password-untuk-buat-admin
-PORT=3000
-```
-> ⚠️ ENCRYPT_KEY harus TEPAT 32 karakter!
-
-### 4. Jalankan Server
+### Langkah 4: Start server
 ```bash
 node server.js
 ```
-Buka: http://localhost:3000
 
-### 5. Buat Akun Admin Pertama
-```bash
-curl -X POST http://localhost:3000/api/seed-admin \
-  -H "Content-Type: application/json" \
-  -d '{
-    "secret": "seed-libery-2024",
-    "username": "admin",
-    "password": "passwordAdmin123",
-    "email": "admin@email.com"
-  }'
+Atau set startup command di Pterodactyl menjadi:
 ```
-Atau pakai Postman / browser extension.
-
-Setelah itu login di `/login` dengan username `admin`.
-
----
-
-## Deploy ke Server (Betabotz Pro 1)
-
-### Jalankan dengan PM2 (agar tidak mati)
-```bash
-# Install PM2
-npm install -g pm2
-
-# Jalankan
-pm2 start server.js --name libery-audio
-
-# Auto-start saat server reboot
-pm2 save
-pm2 startup
-```
-
-### Setup Nginx (opsional, untuk domain)
-```nginx
-server {
-    listen 80;
-    server_name domain-kamu.com;
-
-    location / {
-        proxy_pass http://localhost:3000;
-        proxy_http_version 1.1;
-        proxy_set_header Host $host;
-        proxy_set_header X-Real-IP $remote_addr;
-    }
-}
+node server.js
 ```
 
 ---
 
-## Cara Kerja Admin Panel
+## 🌐 AKSES
 
-### Akses Admin
-- Login dengan akun admin → otomatis redirect ke `/admin`
-- Atau akses langsung `/admin` saat sudah login sebagai admin
-
-### Kelola Plan User
-1. **Cepat dari tabel** — klik tombol `+7hr`, `+30hr`, atau `Free` langsung
-2. **Form Aktifkan Plan** — masukkan username + pilih paket → klik Aktifkan
-3. **Edit User modal** — klik ✏️ pada baris user → ubah plan, durasi, dan role
-
-### Reset Password User
-- Klik 🔑 pada baris user → masukkan password baru → simpan
-
-### Hapus User
-- Klik 🗑 → konfirmasi → user dan semua data dihapus permanen
+| Halaman | URL |
+|---------|-----|
+| Landing Page | `http://pnode1.danbot.host:1179` |
+| Dashboard User | `http://pnode1.danbot.host:1179/dashboard` |
+| Admin Panel | `http://pnode1.danbot.host:1179/admin` |
 
 ---
 
-## Alur Upgrade User (Manual)
+## 🔑 LOGIN ADMIN
 
-```
-1. User minta upgrade (WA/Discord ke admin)
-2. User transfer pembayaran
-3. Admin login → buka Admin Panel → Kelola Plan
-4. Cari username user → aktifkan paket sesuai yang dibeli
-5. User refresh dashboard → plan langsung aktif
-```
+Buka `/admin` dan login dengan:
+- Username: sesuai `ADMIN_USERNAME` di .env
+- Password: sesuai `ADMIN_PASSWORD` di .env
 
 ---
 
-## Catatan Penting
+## 🎫 CARA BUAT KODE INVITE
 
-- `db.json` adalah database sederhana dalam format JSON
-- Backup file `db.json` secara berkala!
-- API Key Roblox user tersimpan terenkripsi AES-256
-- Session bertahan 7 hari sebelum perlu login ulang
+1. Login ke Admin Panel (`/admin`)
+2. Klik menu **Invite Codes**
+3. Pilih tier (Beginner/Pro), max uses, dan expiry
+4. Klik **BUAT KODE**
+5. Bagikan kode ke user yang mau diupgrade
+
+User bisa redeem kode di:
+- Saat **Register** (langsung dapat tier)
+- Di **Dashboard → Settings → Invite Code**
+
+---
+
+## ⚙️ CARA USER SETUP
+
+1. Daftar akun di landing page
+2. Login ke dashboard
+3. Pergi ke **Settings → Roblox**
+4. Pilih Personal atau Group Account
+5. Masukkan User ID + API Key
+6. Upload audio!
+
+---
+
+## 🔧 CATATAN PENTING
+
+- **FFmpeg**: Fitur tempo/pitch processing butuh FFmpeg terinstall di server. Jika tidak ada, upload tetap berjalan tapi tanpa processing audio.
+- **Database**: Data disimpan di `data/xello.sqlite` — jangan hapus folder ini!
+- **Session**: User harus login ulang jika server restart.
+
+---
+
+## 📞 SUPPORT
+
+Jika ada error, cek console log di Pterodactyl panel.

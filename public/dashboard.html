@@ -1,510 +1,863 @@
 <!DOCTYPE html>
 <html lang="id">
 <head>
-<meta charset="UTF-8">
-<meta name="viewport" content="width=device-width,initial-scale=1.0">
-<title>Dashboard — LiberyAudio</title>
-<link rel="stylesheet" href="/css/style.css">
+<meta charset="UTF-8"/>
+<meta name="viewport" content="width=device-width,initial-scale=1.0"/>
+<title>Dashboard – XELLO Studio</title>
+<link href="https://fonts.googleapis.com/css2?family=Orbitron:wght@400;700;900&family=Space+Mono:wght@400;700&family=Inter:wght@300;400;500;600&display=swap" rel="stylesheet"/>
 <style>
-body{display:flex;min-height:100vh}
+:root{
+  --c:#00e5ff;--c2:#7b2fff;--c3:#ff2d6b;--g:#00e5a0;
+  --bg:#04080f;--bg2:#080f1c;--bg3:#0c1525;--bg4:#101e30;
+  --glass:rgba(0,229,255,0.05);
+  --border:rgba(0,229,255,0.12);
+  --glow:0 0 30px rgba(0,229,255,0.2);
+}
+*{box-sizing:border-box;margin:0;padding:0}
+body{font-family:'Inter',sans-serif;background:var(--bg);color:#c8dff0;min-height:100vh;display:flex;flex-direction:column}
+body::before{content:'';position:fixed;inset:0;background-image:linear-gradient(rgba(0,229,255,0.015) 1px,transparent 1px),linear-gradient(90deg,rgba(0,229,255,0.015) 1px,transparent 1px);background-size:50px 50px;pointer-events:none;z-index:0}
 
 /* SIDEBAR */
-.sidebar{width:220px;background:var(--bg2);border-right:1px solid var(--border);display:flex;flex-direction:column;flex-shrink:0;position:sticky;top:0;height:100vh;overflow-y:auto}
-.s-logo{padding:22px 18px;border-bottom:1px solid var(--border);font-size:17px;font-weight:800}
-.s-logo span{color:var(--accent)}
-.s-user{padding:14px 18px;border-bottom:1px solid var(--border)}
-.s-username{font-size:13px;font-weight:700}
-.s-plan{font-size:11px;margin-top:3px}
-.s-nav{flex:1;padding:12px 10px;display:flex;flex-direction:column;gap:2px}
-.nav-btn{display:flex;align-items:center;gap:10px;padding:9px 12px;border-radius:8px;font-size:13px;font-weight:600;color:var(--muted);cursor:pointer;background:none;border:none;width:100%;text-align:left;transition:all .2s;font-family:'Syne',sans-serif}
-.nav-btn:hover,.nav-btn.active{background:rgba(0,229,255,0.06);color:var(--text)}
-.nav-btn.active{color:var(--accent);border-left:2px solid var(--accent);padding-left:10px}
-.s-bottom{padding:14px;border-top:1px solid var(--border)}
-.logout-btn{display:flex;align-items:center;gap:8px;padding:9px 12px;border-radius:8px;font-size:13px;font-weight:600;color:var(--muted);cursor:pointer;background:none;border:none;width:100%;font-family:'Syne',sans-serif;transition:all .2s}
-.logout-btn:hover{color:var(--red);background:rgba(239,68,68,0.06)}
+.layout{display:flex;min-height:100vh;position:relative;z-index:1}
+.sidebar{width:220px;background:rgba(8,15,28,0.95);border-right:1px solid var(--border);display:flex;flex-direction:column;position:fixed;left:0;top:0;bottom:0;z-index:50;backdrop-filter:blur(20px)}
+.sb-logo{padding:20px 18px;border-bottom:1px solid var(--border);display:flex;align-items:center;gap:10px}
+.sb-logo-text{font-family:'Orbitron',sans-serif;font-size:13px;font-weight:900;color:var(--c);letter-spacing:3px}
+.sb-logo-sub{font-size:9px;color:rgba(200,223,240,0.25);letter-spacing:2px;margin-top:2px}
+.sb-user{padding:14px 16px;border-bottom:1px solid var(--border);display:flex;align-items:center;gap:10px}
+.sb-avatar{width:34px;height:34px;border-radius:50%;background:linear-gradient(135deg,var(--c),var(--c2));display:flex;align-items:center;justify-content:center;font-weight:700;font-size:13px;color:#04080f;flex-shrink:0}
+.sb-uname{font-size:12px;font-weight:600;color:#fff}
+.sb-tier{font-size:10px;padding:2px 7px;border-radius:10px;font-family:'Space Mono',monospace;letter-spacing:.5px;margin-top:2px;display:inline-block}
+.tier-trial{background:rgba(255,152,0,0.15);color:#ff9800;border:1px solid rgba(255,152,0,0.3)}
+.tier-beginner{background:rgba(33,150,243,0.15);color:#4fc3f7;border:1px solid rgba(33,150,243,0.3)}
+.tier-pro{background:rgba(0,229,255,0.12);color:var(--c);border:1px solid rgba(0,229,255,0.3)}
+.sb-nav{flex:1;padding:12px 10px;overflow-y:auto}
+.sb-nav a{display:flex;align-items:center;gap:10px;padding:10px 10px;border-radius:8px;color:rgba(200,223,240,0.45);text-decoration:none;font-size:12px;letter-spacing:.5px;transition:all .2s;margin-bottom:2px;cursor:pointer;border:none;background:none;width:100%;font-family:'Inter',sans-serif}
+.sb-nav a:hover{color:rgba(200,223,240,0.9);background:rgba(255,255,255,0.04)}
+.sb-nav a.active{color:var(--c);background:rgba(0,229,255,0.08);border:1px solid rgba(0,229,255,0.15)}
+.sb-nav a .icon{font-size:15px;flex-shrink:0;width:20px;text-align:center}
+.sb-quota{margin:10px;background:var(--bg3);border:1px solid var(--border);border-radius:10px;padding:12px}
+.sq-label{font-size:9px;letter-spacing:2px;color:rgba(200,223,240,0.3);text-transform:uppercase;margin-bottom:6px}
+.sq-bar-bg{height:4px;background:rgba(255,255,255,0.06);border-radius:2px;overflow:hidden;margin-bottom:6px}
+.sq-bar{height:100%;background:linear-gradient(90deg,var(--c),var(--c2));border-radius:2px;transition:width .5s}
+.sq-text{font-size:10px;color:rgba(200,223,240,0.4);display:flex;justify-content:space-between}
+.sb-logout{padding:12px 10px;border-top:1px solid var(--border)}
+.sb-logout button{width:100%;padding:8px;background:rgba(255,45,107,0.08);border:1px solid rgba(255,45,107,0.2);border-radius:7px;color:rgba(255,93,130,0.7);font-size:11px;font-family:'Orbitron',sans-serif;letter-spacing:1px;cursor:pointer;transition:all .2s}
+.sb-logout button:hover{background:rgba(255,45,107,0.14);color:#ff5c7b}
 
 /* MAIN */
-.main{flex:1;overflow-y:auto;padding:28px;max-width:960px}
-.page-title{font-size:20px;font-weight:800;margin-bottom:4px}
-.page-sub{color:var(--muted);font-size:13px;margin-bottom:24px}
+.main{margin-left:220px;flex:1;padding:24px;display:flex;flex-direction:column;gap:20px}
+.page-section{display:none}
+.page-section.active{display:block}
 
-/* STATS ROW */
-.stats-row{display:grid;grid-template-columns:repeat(auto-fit,minmax(160px,1fr));gap:14px;margin-bottom:24px}
-.stat{background:var(--card);border:1px solid var(--border);border-radius:12px;padding:18px}
-.stat-label{font-size:10px;font-weight:700;color:var(--muted);letter-spacing:1px;margin-bottom:6px}
-.stat-value{font-size:28px;font-weight:800;font-family:'Space Mono',monospace;letter-spacing:-1px}
-.stat-value.accent{color:var(--accent)}
-.stat-sub{font-size:11px;color:var(--muted);margin-top:3px}
+/* CARDS */
+.card{background:var(--bg2);border:1px solid var(--border);border-radius:14px;padding:20px;position:relative;overflow:hidden}
+.card-title{font-family:'Orbitron',sans-serif;font-size:10px;font-weight:700;letter-spacing:3px;color:rgba(200,223,240,0.35);text-transform:uppercase;margin-bottom:16px;display:flex;align-items:center;gap:8px}
+.card-title span{color:var(--c)}
 
-/* PAGE */
-.page{display:none}
-.page.active{display:block}
+/* UPLOAD SECTION */
+.upload-grid{display:grid;grid-template-columns:1fr 1fr;gap:16px}
+@media(max-width:900px){.upload-grid{grid-template-columns:1fr}}
 
-/* CONVERT */
-.conv-limit{background:rgba(0,229,255,0.04);border:1px solid rgba(0,229,255,0.12);border-radius:10px;padding:14px 18px;display:flex;justify-content:space-between;align-items:center;margin-bottom:20px}
-.conv-limit-text{font-size:13px;font-weight:600}
-.conv-limit-sub{font-size:11px;color:var(--muted);margin-top:2px}
-.conv-limit-num{font-family:'Space Mono',monospace;font-size:22px;font-weight:700;color:var(--accent)}
-.tabs{display:flex;gap:6px;margin-bottom:18px}
-.tab-btn{padding:7px 16px;border-radius:6px;font-size:13px;font-weight:700;cursor:pointer;border:1px solid var(--border);background:transparent;color:var(--muted);font-family:'Syne',sans-serif;transition:all .2s}
-.tab-btn.active{background:rgba(0,229,255,0.08);border-color:rgba(0,229,255,0.3);color:var(--accent)}
-.upload-zone{border:2px dashed var(--border);border-radius:12px;padding:36px;text-align:center;cursor:pointer;transition:all .2s;margin-bottom:16px}
-.upload-zone:hover{border-color:rgba(0,229,255,0.3);background:rgba(0,229,255,0.02)}
+.drop-zone{border:2px dashed rgba(0,229,255,0.2);border-radius:12px;padding:36px;text-align:center;transition:all .3s;cursor:pointer;background:rgba(0,229,255,0.02)}
+.drop-zone:hover,.drop-zone.drag-over{border-color:var(--c);background:rgba(0,229,255,0.06)}
+.dz-icon{font-size:36px;margin-bottom:12px;display:block}
+.dz-text{font-size:13px;color:rgba(200,223,240,0.5);line-height:1.6}
+.dz-text strong{color:var(--c)}
+.dz-sub{font-size:11px;color:rgba(200,223,240,0.25);margin-top:6px}
+#fileInput{display:none}
 
-/* PROGRESS */
-#progressBox{display:none;margin-top:16px}
-.progress-track{background:var(--border);border-radius:2px;height:4px;overflow:hidden;margin-top:8px}
-.progress-fill{height:100%;background:var(--accent);border-radius:2px;width:0;transition:width .5s}
+.file-list{margin-top:14px;display:flex;flex-direction:column;gap:7px;max-height:200px;overflow-y:auto}
+.file-item{display:flex;align-items:center;gap:10px;background:var(--bg3);border:1px solid rgba(255,255,255,0.05);border-radius:8px;padding:10px 12px}
+.fi-icon{font-size:18px;flex-shrink:0}
+.fi-name{flex:1;font-size:12px;color:rgba(200,223,240,0.8);white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.fi-size{font-size:10px;color:rgba(200,223,240,0.3);font-family:'Space Mono',monospace;flex-shrink:0}
+.fi-remove{background:none;border:none;color:rgba(200,223,240,0.25);cursor:pointer;font-size:14px;flex-shrink:0;transition:color .2s;padding:2px}
+.fi-remove:hover{color:var(--c3)}
+.fi-play{background:none;border:none;color:rgba(0,229,255,0.5);cursor:pointer;font-size:14px;flex-shrink:0;transition:color .2s;padding:2px}
+.fi-play:hover{color:var(--c)}
+.fi-status{font-size:10px;flex-shrink:0;padding:2px 6px;border-radius:4px}
+.fi-status.pending{color:rgba(200,223,240,0.3)}
+.fi-status.uploading{color:#ff9800}
+.fi-status.success{color:var(--g);background:rgba(0,229,160,0.08)}
+.fi-status.failed{color:var(--c3);background:rgba(255,45,107,0.08)}
 
-/* ACCOUNT */
-.acc-row{display:flex;align-items:center;gap:14px;padding:14px;background:var(--card2);border-radius:10px;margin-bottom:10px}
-.acc-icon{width:38px;height:38px;border-radius:10px;display:flex;align-items:center;justify-content:center;font-size:18px;flex-shrink:0}
+/* PROCESSOR */
+.proc-row{display:grid;grid-template-columns:1fr 1fr;gap:12px;margin-bottom:14px}
+.proc-block{background:var(--bg3);border:1px solid rgba(255,255,255,0.05);border-radius:10px;padding:14px}
+.pb-label{font-size:9px;letter-spacing:2px;color:rgba(200,223,240,0.3);text-transform:uppercase;display:flex;justify-content:space-between;margin-bottom:8px}
+.pb-val{font-family:'Orbitron',sans-serif;font-size:22px;font-weight:900;color:var(--c);margin-bottom:10px}
+.pb-val.pitch{color:#ffd740}
+input[type=range]{width:100%;height:4px;-webkit-appearance:none;background:linear-gradient(90deg,var(--c) var(--p,50%),rgba(255,255,255,0.06) var(--p,50%));border-radius:2px;outline:none;cursor:pointer}
+input[type=range].pitch-range{background:linear-gradient(90deg,#ffd740 var(--p,50%),rgba(255,255,255,0.06) var(--p,50%))}
+input[type=range]::-webkit-slider-thumb{-webkit-appearance:none;width:14px;height:14px;border-radius:50%;background:var(--c);box-shadow:0 0 8px var(--c);cursor:pointer;transition:transform .2s}
+input[type=range].pitch-range::-webkit-slider-thumb{background:#ffd740;box-shadow:0 0 8px #ffd740}
+input[type=range]::-webkit-slider-thumb:hover{transform:scale(1.3)}
+.ticks{display:flex;justify-content:space-between;font-size:9px;color:rgba(200,223,240,0.18);margin-top:5px}
 
-/* PLAN UPGRADE */
-.plan-grid{display:grid;grid-template-columns:1fr 1fr;gap:14px;margin-top:20px}
-.plan-card{background:var(--card);border:1px solid var(--border);border-radius:14px;padding:24px;position:relative}
-.plan-card.highlight{border-color:rgba(0,229,255,0.3)}
-.plan-popular{position:absolute;top:-11px;left:50%;transform:translateX(-50%);background:var(--accent);color:#000;font-size:10px;font-weight:800;padding:3px 14px;border-radius:100px;white-space:nowrap}
-.plan-name{font-size:11px;font-weight:700;color:var(--muted);letter-spacing:1px;margin-bottom:6px}
-.plan-price{font-size:32px;font-weight:800;font-family:'Space Mono',monospace;letter-spacing:-2px;margin-bottom:2px}
-.plan-period{font-size:12px;color:var(--muted);margin-bottom:18px}
-.plan-features{display:flex;flex-direction:column;gap:8px;margin-bottom:18px;font-size:13px}
+.toggle-row{display:flex;align-items:center;justify-content:space-between;margin-bottom:12px}
+.tgl-label{font-size:12px;color:rgba(200,223,240,0.6)}
+.sw{position:relative;width:42px;height:22px;cursor:pointer;display:inline-block}
+.sw input{opacity:0;width:0;height:0}
+.sw-track{position:absolute;inset:0;background:rgba(255,255,255,0.06);border:1px solid rgba(255,255,255,0.08);border-radius:22px;transition:all .3s}
+.sw-knob{position:absolute;width:16px;height:16px;background:rgba(255,255,255,0.25);border-radius:50%;top:2px;left:2px;transition:all .3s}
+.sw input:checked~.sw-track{background:rgba(0,229,255,0.18);border-color:var(--c);box-shadow:0 0 8px rgba(0,229,255,0.2)}
+.sw input:checked~.sw-knob{left:22px;background:var(--c);box-shadow:0 0 8px var(--c)}
 
-@media(max-width:640px){
-  .sidebar{display:none}
-  .main{padding:16px}
-  .plan-grid{grid-template-columns:1fr}
-}
+/* PREVIEW */
+.preview-box{background:var(--bg3);border:1px solid rgba(255,255,255,0.05);border-radius:10px;padding:16px;margin-top:0}
+.prev-title{font-size:10px;letter-spacing:2px;color:rgba(200,223,240,0.3);text-transform:uppercase;margin-bottom:12px}
+.prev-name{font-size:12px;color:rgba(200,223,240,0.7);margin-bottom:10px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.prev-controls{display:flex;align-items:center;gap:10px}
+.prev-btn{background:none;border:1px solid rgba(0,229,255,0.25);border-radius:50%;width:34px;height:34px;display:flex;align-items:center;justify-content:center;cursor:pointer;color:var(--c);font-size:14px;transition:all .2s;flex-shrink:0}
+.prev-btn:hover{background:rgba(0,229,255,0.1);box-shadow:var(--glow)}
+.prev-progress-wrap{flex:1;height:4px;background:rgba(255,255,255,0.06);border-radius:2px;cursor:pointer;position:relative}
+.prev-progress{height:100%;background:linear-gradient(90deg,var(--c),var(--c2));border-radius:2px;width:0;transition:width .1s linear}
+.prev-time{font-size:10px;color:rgba(200,223,240,0.3);font-family:'Space Mono',monospace;flex-shrink:0}
+#waveCanvas{width:100%;height:40px;margin-bottom:10px;opacity:.5}
+.prev-no-file{text-align:center;padding:20px;color:rgba(200,223,240,0.2);font-size:12px}
+
+/* UPLOAD BTN */
+.upload-btn{width:100%;padding:13px;background:linear-gradient(135deg,var(--c),var(--c2));color:#04080f;font-family:'Orbitron',sans-serif;font-size:12px;font-weight:700;letter-spacing:2px;border:none;border-radius:10px;cursor:pointer;transition:all .3s;margin-top:14px}
+.upload-btn:hover:not(:disabled){transform:translateY(-2px);box-shadow:0 8px 30px rgba(0,229,255,0.35)}
+.upload-btn:disabled{opacity:.4;cursor:not-allowed;transform:none}
+.upload-progress{margin-top:14px;display:none}
+.up-bar-bg{height:6px;background:rgba(255,255,255,0.06);border-radius:3px;overflow:hidden;margin-bottom:8px}
+.up-bar{height:100%;background:linear-gradient(90deg,var(--c),var(--c2));width:0;border-radius:3px;transition:width .3s}
+.up-status{font-size:11px;color:rgba(200,223,240,0.4);text-align:center}
+
+/* HISTORY */
+.hist-table{width:100%;border-collapse:collapse}
+.hist-table th{font-size:9px;letter-spacing:2px;color:rgba(200,223,240,0.25);text-transform:uppercase;padding:8px 12px;text-align:left;border-bottom:1px solid rgba(255,255,255,0.04)}
+.hist-table td{padding:10px 12px;font-size:12px;border-bottom:1px solid rgba(255,255,255,0.03);vertical-align:middle}
+.hist-table tr:hover td{background:rgba(255,255,255,0.02)}
+.asset-id{font-family:'Space Mono',monospace;font-size:11px;color:var(--c)}
+.copy-btn{background:none;border:1px solid rgba(0,229,255,0.2);color:rgba(0,229,255,0.6);padding:3px 7px;border-radius:4px;font-size:10px;cursor:pointer;transition:all .2s;font-family:'Space Mono',monospace}
+.copy-btn:hover{border-color:var(--c);color:var(--c)}
+.status-badge{font-size:10px;padding:3px 8px;border-radius:4px;font-family:'Space Mono',monospace}
+.status-badge.success{background:rgba(0,229,160,0.1);color:var(--g);border:1px solid rgba(0,229,160,0.2)}
+.status-badge.failed{background:rgba(255,45,107,0.1);color:var(--c3);border:1px solid rgba(255,45,107,0.2)}
+.empty-state{text-align:center;padding:40px;color:rgba(200,223,240,0.2);font-size:13px}
+.empty-state .ei{font-size:32px;display:block;margin-bottom:8px}
+
+/* SETTINGS */
+.settings-tabs{display:flex;gap:0;background:rgba(255,255,255,0.03);border-radius:8px;padding:3px;margin-bottom:20px;border:1px solid rgba(255,255,255,0.05)}
+.stab{flex:1;padding:9px;text-align:center;font-size:11px;font-family:'Orbitron',sans-serif;letter-spacing:1px;cursor:pointer;border-radius:6px;border:none;background:transparent;color:rgba(200,223,240,0.35);transition:all .2s}
+.stab.active{background:rgba(0,229,255,0.1);color:var(--c);border:1px solid rgba(0,229,255,0.2)}
+.stab-content{display:none}
+.stab-content.active{display:block}
+.form-group{margin-bottom:16px}
+.form-group label{display:block;font-size:10px;letter-spacing:2px;color:rgba(200,223,240,0.35);text-transform:uppercase;margin-bottom:7px;font-family:'Space Mono',monospace}
+.form-group input,.form-group select{width:100%;background:rgba(0,229,255,0.03);border:1px solid rgba(0,229,255,0.12);border-radius:8px;padding:11px 14px;color:#c8dff0;font-size:13px;outline:none;transition:all .3s;font-family:'Inter',sans-serif}
+.form-group input:focus,.form-group select:focus{border-color:rgba(0,229,255,0.4);background:rgba(0,229,255,0.05)}
+.form-group select option{background:#0c1525}
+.form-hint{font-size:11px;color:rgba(200,223,240,0.25);margin-top:5px;letter-spacing:.3px}
+.save-btn{padding:11px 24px;background:linear-gradient(135deg,var(--c),var(--c2));color:#04080f;font-family:'Orbitron',sans-serif;font-size:11px;font-weight:700;letter-spacing:2px;border:none;border-radius:8px;cursor:pointer;transition:all .3s}
+.save-btn:hover{box-shadow:var(--glow);transform:translateY(-1px)}
+.msg-inline{font-size:12px;margin-top:12px;padding:10px;border-radius:8px;display:none}
+.msg-inline.error{background:rgba(255,45,107,0.08);color:#ff5c7b;border:1px solid rgba(255,45,107,0.15);display:block}
+.msg-inline.success{background:rgba(0,229,160,0.08);color:#00e5a0;border:1px solid rgba(0,229,160,0.15);display:block}
+
+/* INVITE REDEEM */
+.invite-box{display:flex;gap:10px;margin-top:14px}
+.invite-box input{flex:1;background:rgba(0,229,255,0.03);border:1px solid rgba(0,229,255,0.12);border-radius:8px;padding:11px 14px;color:var(--c);font-size:14px;outline:none;font-family:'Space Mono',monospace;letter-spacing:3px;text-transform:uppercase}
+.invite-box input::placeholder{text-transform:none;letter-spacing:1px;color:rgba(200,223,240,0.2);font-size:12px}
+.invite-box input:focus{border-color:rgba(0,229,255,0.4)}
+.invite-box button{padding:11px 20px;background:rgba(0,229,255,0.1);border:1px solid rgba(0,229,255,0.3);color:var(--c);font-family:'Orbitron',sans-serif;font-size:11px;letter-spacing:1px;border-radius:8px;cursor:pointer;transition:all .2s;white-space:nowrap}
+.invite-box button:hover{background:rgba(0,229,255,0.18)}
+
+/* ALERT BOXES */
+.info-box{background:rgba(0,229,255,0.04);border:1px solid rgba(0,229,255,0.15);border-radius:10px;padding:14px 16px;font-size:12px;color:rgba(200,223,240,0.6);line-height:1.7;margin-bottom:16px}
+.info-box strong{color:var(--c)}
+.warn-box{background:rgba(255,152,0,0.06);border:1px solid rgba(255,152,0,0.2);border-radius:10px;padding:14px 16px;font-size:12px;color:rgba(255,183,77,0.8);line-height:1.7;margin-bottom:16px}
+
+/* TOAST */
+.toast{position:fixed;bottom:24px;right:24px;background:var(--bg3);border:1px solid var(--border);border-radius:10px;padding:12px 18px;font-size:12px;color:#c8dff0;box-shadow:0 8px 30px rgba(0,0,0,0.5);z-index:1000;transform:translateX(120%);transition:transform .3s;max-width:280px}
+.toast.show{transform:translateX(0)}
+.toast.success{border-color:rgba(0,229,160,0.3);color:var(--g)}
+.toast.error{border-color:rgba(255,45,107,0.3);color:var(--c3)}
+
+/* TOP BAR */
+.topbar{display:flex;align-items:center;justify-content:space-between;margin-bottom:4px}
+.page-title{font-family:'Orbitron',sans-serif;font-size:18px;font-weight:900;color:#fff;letter-spacing:2px}
+.page-sub{font-size:12px;color:rgba(200,223,240,0.35);margin-top:3px}
+
+.no-api-warn{background:rgba(255,152,0,0.08);border:1px solid rgba(255,152,0,0.25);border-radius:10px;padding:14px 18px;font-size:13px;color:rgba(255,183,77,0.9);margin-bottom:16px;display:flex;align-items:center;gap:12px;cursor:pointer;transition:background .2s}
+.no-api-warn:hover{background:rgba(255,152,0,0.12)}
+
+.result-card{background:var(--bg3);border:1px solid rgba(0,229,160,0.2);border-radius:10px;padding:14px 16px;margin-bottom:8px;display:flex;align-items:center;gap:12px}
+.result-card.fail{border-color:rgba(255,45,107,0.2)}
+.rc-icon{font-size:20px;flex-shrink:0}
+.rc-name{font-size:12px;color:rgba(200,223,240,0.8);font-weight:500}
+.rc-asset{font-family:'Space Mono',monospace;font-size:11px;color:var(--c);margin-top:2px}
+.rc-err{font-size:11px;color:rgba(255,93,130,0.7);margin-top:2px}
+.results-box{display:none;margin-top:14px}
 </style>
 </head>
 <body>
 
-<div class="sidebar">
-  <div class="s-logo">Libery<span>Audio</span></div>
-  <div class="s-user">
-    <div class="s-username" id="sUsername">...</div>
-    <div class="s-plan text-muted" id="sPlan">Free Plan</div>
+<div class="layout">
+<!-- SIDEBAR -->
+<aside class="sidebar">
+  <div class="sb-logo">
+    <div>
+      <div class="sb-logo-text">XELLO</div>
+      <div class="sb-logo-sub">STUDIO</div>
+    </div>
   </div>
-  <nav class="s-nav">
-    <button class="nav-btn active" onclick="nav('home',this)">🏠 Dashboard</button>
-    <button class="nav-btn" onclick="nav('convert',this)">⚡ Konversi Audio</button>
-    <button class="nav-btn" onclick="nav('history',this)">📋 Riwayat</button>
-    <button class="nav-btn" onclick="nav('account',this)">⚙️ Akun & API Key</button>
-    <button class="nav-btn" onclick="nav('plan',this)">👑 Upgrade Plan</button>
+  <div class="sb-user">
+    <div class="sb-avatar" id="sbAvatar">?</div>
+    <div>
+      <div class="sb-uname" id="sbName">Loading...</div>
+      <span class="sb-tier tier-trial" id="sbTier">TRIAL</span>
+    </div>
+  </div>
+  <nav class="sb-nav">
+    <a class="active" onclick="goPage('upload')" id="nav-upload"><span class="icon">🚀</span>Upload Audio</a>
+    <a onclick="goPage('history')" id="nav-history"><span class="icon">📋</span>Riwayat Upload</a>
+    <a onclick="goPage('settings')" id="nav-settings"><span class="icon">⚙️</span>Settings</a>
   </nav>
-  <div class="s-bottom">
-    <button class="logout-btn" onclick="logout()">🚪 Logout</button>
+  <div class="sb-quota">
+    <div class="sq-label">Quota Bulan Ini</div>
+    <div class="sq-bar-bg"><div class="sq-bar" id="quotaBar" style="width:0%"></div></div>
+    <div class="sq-text"><span id="quotaUsed">0/0</span><span id="quotaLeft">Sisa: 0</span></div>
   </div>
-</div>
+  <div class="sb-logout">
+    <button onclick="doLogout()">⏻ LOGOUT</button>
+  </div>
+</aside>
 
-<div class="main">
+<!-- MAIN CONTENT -->
+<main class="main">
 
-  <!-- HOME -->
-  <div class="page active" id="page-home">
-    <div class="page-title">Dashboard 👋</div>
-    <div class="page-sub" id="welcomeSub">Selamat datang!</div>
+  <!-- UPLOAD PAGE -->
+  <div class="page-section active" id="page-upload">
+    <div class="topbar">
+      <div><div class="page-title">Upload Audio</div><div class="page-sub">Bulk upload MP3 ke Roblox</div></div>
+    </div>
+    <div id="noApiWarn" class="no-api-warn" onclick="goPage('settings')">
+      ⚠️ <span>Kamu belum menghubungkan akun Roblox. <strong>Klik di sini untuk ke Settings →</strong></span>
+    </div>
+    <div class="upload-grid">
+      <!-- LEFT: DROP + FILES -->
+      <div>
+        <div class="card">
+          <div class="card-title"><span>◈</span> PILIH FILE</div>
+          <div class="drop-zone" id="dropZone" onclick="document.getElementById('fileInput').click()">
+            <span class="dz-icon">🎵</span>
+            <div class="dz-text">Drag & drop file MP3 di sini<br><strong>atau klik untuk browse</strong></div>
+            <div class="dz-sub">Maks 20MB per file · Format MP3</div>
+          </div>
+          <input type="file" id="fileInput" multiple accept=".mp3,audio/mpeg"/>
+          <div class="file-list" id="fileList"></div>
 
-    <div class="stats-row">
-      <div class="stat">
-        <div class="stat-label">TOTAL KONVERSI</div>
-        <div class="stat-value accent" id="statTotal">0</div>
+          <!-- PREVIEW BOX -->
+          <div class="preview-box" id="previewBox" style="margin-top:14px;display:none">
+            <div class="prev-title">▶ PREVIEW</div>
+            <div class="prev-name" id="prevName">—</div>
+            <canvas id="waveCanvas" height="40"></canvas>
+            <div class="prev-controls">
+              <button class="prev-btn" id="prevPlayBtn" onclick="togglePlay()">▶</button>
+              <div class="prev-progress-wrap" id="prevProgressWrap" onclick="seekAudio(event)">
+                <div class="prev-progress" id="prevProgress"></div>
+              </div>
+              <span class="prev-time" id="prevTime">0:00 / 0:00</span>
+            </div>
+          </div>
+
+          <button class="upload-btn" id="uploadBtn" onclick="startUpload()" disabled>⚡ UPLOAD KE ROBLOX</button>
+          <div class="upload-progress" id="uploadProgress">
+            <div class="up-bar-bg"><div class="up-bar" id="upBar"></div></div>
+            <div class="up-status" id="upStatus">Memproses...</div>
+          </div>
+          <div class="results-box" id="resultsBox"></div>
+        </div>
       </div>
-      <div class="stat">
-        <div class="stat-label">SISA HARI INI</div>
-        <div class="stat-value" id="statRemain">3</div>
-        <div class="stat-sub">Reset setiap hari</div>
-      </div>
-      <div class="stat">
-        <div class="stat-label">AKUN ROBLOX</div>
-        <div style="margin-top:8px" id="statRoblox"><span class="badge badge-red">Belum terhubung</span></div>
-      </div>
-      <div class="stat">
-        <div class="stat-label">PLAN AKTIF</div>
-        <div style="margin-top:8px" id="statPlan"><span class="badge badge-free">Free</span></div>
+
+      <!-- RIGHT: PROCESSOR -->
+      <div>
+        <div class="card">
+          <div class="card-title"><span>◈</span> AUDIO PROCESSOR</div>
+          <div class="toggle-row">
+            <span class="tgl-label">🎚️ Ubah Tempo</span>
+            <label class="sw"><input type="checkbox" id="tempoToggle" onchange="updateTempoUI()"/><div class="sw-track"></div><div class="sw-knob"></div></label>
+          </div>
+          <div class="proc-row">
+            <div class="proc-block">
+              <div class="pb-label"><span>TEMPO</span><span id="tempoLabel">2.0x</span></div>
+              <div class="pb-val" id="tempoVal">2.0×</div>
+              <input type="range" id="tempoRange" min="10" max="40" value="20" step="1" oninput="updateTempo(this)"/>
+              <div class="ticks"><span>1.0×</span><span>2.0×</span><span>3.0×</span><span>4.0×</span></div>
+            </div>
+            <div class="proc-block">
+              <div class="pb-label"><span>PITCH</span><span id="pitchLabel">0st</span></div>
+              <div class="pb-val pitch" id="pitchVal">±0st</div>
+              <input type="range" class="pitch-range" id="pitchRange" min="-12" max="12" value="0" step="1" oninput="updatePitch(this)"/>
+              <div class="ticks"><span>-12</span><span>0</span><span>+12</span></div>
+            </div>
+          </div>
+          <div class="info-box">
+            <strong>Info Processor:</strong><br>
+            Tempo <strong id="tempoInfo">2.0x</strong> → playback speed di Roblox jadi <strong id="playInfo">0.5x</strong> dari normal.<br>
+            Pitch mengubah nada audio tanpa mempengaruhi durasi.
+          </div>
+          <div class="toggle-row" style="margin-top:4px">
+            <span class="tgl-label">🎵 Preview dengan efek</span>
+            <label class="sw"><input type="checkbox" id="previewWithEffects"/><div class="sw-track"></div><div class="sw-knob"></div></label>
+          </div>
+        </div>
       </div>
     </div>
+  </div>
 
+  <!-- HISTORY PAGE -->
+  <div class="page-section" id="page-history">
+    <div class="topbar" style="margin-bottom:16px">
+      <div><div class="page-title">Riwayat Upload</div><div class="page-sub">100 upload terakhir</div></div>
+      <button onclick="loadHistory()" style="background:rgba(0,229,255,0.08);border:1px solid rgba(0,229,255,0.2);color:var(--c);padding:8px 14px;border-radius:7px;font-size:11px;cursor:pointer;font-family:Orbitron">↻ REFRESH</button>
+    </div>
     <div class="card">
-      <div class="card-header"><span class="card-title">Upload Terbaru</span></div>
-      <div id="recentList">
-        <div class="empty"><div class="empty-icon">🎵</div><div class="empty-title">Belum ada konversi</div><div>Mulai konversi lagu pertama kamu</div></div>
-      </div>
+      <div id="histContent"><div class="empty-state"><span class="ei">📭</span>Loading...</div></div>
     </div>
   </div>
 
-  <!-- CONVERT -->
-  <div class="page" id="page-convert">
-    <div class="page-title">Konversi Audio</div>
-    <div class="page-sub">Upload MP3 atau paste link YouTube/SoundCloud</div>
+  <!-- SETTINGS PAGE -->
+  <div class="page-section" id="page-settings">
+    <div class="topbar" style="margin-bottom:16px">
+      <div><div class="page-title">Settings</div><div class="page-sub">Kelola akun & Roblox</div></div>
+    </div>
+    <div class="settings-tabs">
+      <button class="stab active" onclick="switchStab('roblox')">🔗 Roblox</button>
+      <button class="stab" onclick="switchStab('invite')">🎫 Invite Code</button>
+      <button class="stab" onclick="switchStab('account')">👤 Akun</button>
+    </div>
 
-    <div class="card">
-      <div class="card-body">
-        <div class="conv-limit">
-          <div><div class="conv-limit-text">Sisa Konversi Hari Ini</div><div class="conv-limit-sub">Free plan • Reset tiap tengah malam</div></div>
-          <div class="conv-limit-num" id="convLimitNum">3/3</div>
+    <!-- ROBLOX SETTINGS -->
+    <div class="stab-content active" id="stab-roblox">
+      <div class="card">
+        <div class="card-title"><span>◈</span> HUBUNGKAN ROBLOX</div>
+        <div class="info-box">
+          Buat API Key di <strong>Roblox Creator Hub → Credentials</strong><br>
+          Pastikan aktifkan permission: <strong>Assets:Read</strong> dan <strong>Assets:Write</strong>
         </div>
-
-        <div class="tabs">
-          <button class="tab-btn active" onclick="switchTab('url',this)">🔗 URL</button>
-          <button class="tab-btn" onclick="switchTab('file',this)">📁 File MP3</button>
+        <div class="settings-tabs" style="margin-bottom:20px">
+          <button class="stab active" id="rtabPersonal" onclick="switchRobloxTab('user')">👤 Personal Account</button>
+          <button class="stab" id="rtabGroup" onclick="switchRobloxTab('group')">👥 Group Account</button>
         </div>
-
-        <div id="tab-url">
+        <!-- Personal -->
+        <div id="robloxPersonal">
           <div class="form-group">
-            <label class="form-label">YOUTUBE ATAU SOUNDCLOUD URL</label>
-            <input type="text" class="form-input" id="audioUrl" placeholder="https://youtu.be/... atau soundcloud.com/...">
+            <label>Roblox User ID</label>
+            <input type="text" id="rxUserId" placeholder="Contoh: 9217554647"/>
+            <div class="form-hint">Temukan di URL profil: roblox.com/users/[ID]/profile</div>
+          </div>
+          <div class="form-group">
+            <label>API Key (Personal)</label>
+            <input type="password" id="rxApiKey" placeholder="Paste API Key kamu"/>
+            <div class="form-hint">Kosongkan jika tidak ingin mengubah key tersimpan</div>
           </div>
         </div>
-        <div id="tab-file" style="display:none">
-          <div class="upload-zone" onclick="document.getElementById('mp3File').click()">
-            <div style="font-size:28px;margin-bottom:10px">⬆️</div>
-            <div style="font-weight:600;margin-bottom:4px">Drag & drop MP3 di sini</div>
-            <div class="text-muted" style="font-size:13px">atau klik untuk browse (max 200MB)</div>
-            <div id="fileName" style="margin-top:10px;font-size:12px;color:var(--accent)"></div>
+        <!-- Group -->
+        <div id="robloxGroup" style="display:none">
+          <div class="info-box">
+            <strong>Tutorial Group Account:</strong><br>
+            1. Buka Group Settings di Roblox<br>
+            2. Creator Dashboard → Credentials<br>
+            3. Buat API Key dengan Assets:Read dan Assets:Write<br>
+            4. Copy User ID dan Group ID
           </div>
-          <input type="file" id="mp3File" accept=".mp3" style="display:none" onchange="document.getElementById('fileName').textContent=this.files[0]?.name||''">
+          <div class="form-group">
+            <label>Group ID</label>
+            <input type="text" id="rxGroupId" placeholder="Contoh: 12345678"/>
+            <div class="form-hint">Temukan di URL group: roblox.com/groups/[ID]</div>
+          </div>
+          <div class="form-group">
+            <label>Roblox User ID (Creator)</label>
+            <input type="text" id="rxGroupUserId" placeholder="Contoh: 9217554647"/>
+          </div>
+          <div class="form-group">
+            <label>Group API Key</label>
+            <input type="password" id="rxGroupApiKey" placeholder="Paste Group API Key"/>
+            <div class="form-hint">Kosongkan jika tidak ingin mengubah key tersimpan</div>
+          </div>
         </div>
-
-        <div style="margin-top:4px">
-          <div style="font-size:12px;font-weight:700;color:var(--muted);margin-bottom:16px">⚙️ PENGATURAN AUDIO</div>
-
-          <div class="slider-row"><span class="slider-label">Kecepatan</span><span class="slider-val" id="vSpeed">2.0x</span></div>
-          <input type="range" min="10" max="30" value="20" oninput="document.getElementById('vSpeed').textContent=(this.value/10).toFixed(1)+'x'">
-
-          <div class="slider-row"><span class="slider-label">Amplifikasi (dB)</span><span class="slider-val" id="vAmp">-4 dB</span></div>
-          <input type="range" min="-10" max="0" value="-4" oninput="document.getElementById('vAmp').textContent=this.value+' dB'" id="slAmp">
-
-          <div class="slider-row"><span class="slider-label">Durasi Maks</span><span class="slider-val" id="vDur">350s</span></div>
-          <input type="range" min="60" max="600" value="350" oninput="document.getElementById('vDur').textContent=this.value+'s'" id="slDur">
-        </div>
-
-        <div class="form-group" style="margin-top:4px">
-          <label class="form-label">UPLOAD KE</label>
-          <div class="tabs"><button class="tab-btn active" onclick="switchUpload('personal',this)">👤 Personal</button><button class="tab-btn" onclick="switchUpload('group',this)">👥 Group</button></div>
-        </div>
-
-        <button class="btn btn-primary btn-full" style="margin-top:4px" onclick="doConvert()">⚡ Konversi & Upload ke Roblox</button>
-
-        <div id="progressBox">
-          <div style="font-size:13px;font-weight:700;color:var(--accent)" id="progressText">🔄 Memproses...</div>
-          <div class="progress-track"><div class="progress-fill" id="progressFill"></div></div>
-        </div>
-      </div>
-    </div>
-  </div>
-
-  <!-- HISTORY -->
-  <div class="page" id="page-history">
-    <div class="page-title">Riwayat Konversi</div>
-    <div class="page-sub">Semua audio yang sudah diupload ke Roblox</div>
-    <div class="card">
-      <div id="historyContent">
-        <div class="empty"><div class="empty-icon">📋</div><div class="empty-title">Belum ada riwayat</div></div>
-      </div>
-    </div>
-  </div>
-
-  <!-- ACCOUNT -->
-  <div class="page" id="page-account">
-    <div class="page-title">Akun & API Key</div>
-    <div class="page-sub">Hubungkan akun Roblox kamu</div>
-
-    <div class="card" style="margin-bottom:16px">
-      <div class="card-header"><span class="card-title">Info Akun</span></div>
-      <div class="card-body">
-        <div class="acc-row">
-          <div class="acc-icon" style="background:rgba(0,229,255,0.08)">👤</div>
-          <div><div style="font-size:14px;font-weight:700" id="accUsername">...</div><div class="text-muted" style="font-size:12px" id="accEmail">...</div></div>
-        </div>
+        <button class="save-btn" onclick="saveRoblox()">💾 SIMPAN</button>
+        <div class="msg-inline" id="robloxMsg"></div>
       </div>
     </div>
 
-    <div class="card">
-      <div class="card-header"><span class="card-title">Hubungkan Roblox</span></div>
-      <div class="card-body">
-        <div style="background:var(--card2);border-radius:8px;padding:14px;margin-bottom:20px;font-size:13px;line-height:1.7;color:var(--muted)">
-          <strong style="color:var(--text)">Cara mendapatkan API Key:</strong><br>
-          1. Buka <a href="https://create.roblox.com/credentials" target="_blank" class="text-accent">Roblox Creator Hub → API Keys</a><br>
-          2. Klik <strong style="color:var(--text)">Create API Key</strong> → beri nama bebas<br>
-          3. Permissions: <code class="text-accent">Assets:Read</code> dan <code class="text-accent">Assets:Write</code><br>
-          4. Save → salin key yang muncul (hanya tampil sekali!)
-        </div>
-
-        <div class="tabs"><button class="tab-btn active" onclick="switchAccTab('personal',this)">👤 Personal</button><button class="tab-btn" onclick="switchAccTab('group',this)">👥 Group</button></div>
-
-        <div class="form-group">
-          <label class="form-label">ROBLOX USER ID</label>
-          <input type="text" class="form-input mono" id="robloxUid" placeholder="Contoh: 9217554647">
+    <!-- INVITE CODE -->
+    <div class="stab-content" id="stab-invite">
+      <div class="card">
+        <div class="card-title"><span>◈</span> REDEEM INVITE CODE</div>
+        <div class="warn-box">
+          ⚠️ Kode invite digunakan untuk upgrade tier. Pastikan kamu mendapatkan kode dari admin atau teman yang memiliki akses.
         </div>
         <div class="form-group">
-          <label class="form-label">API KEY</label>
-          <input type="password" class="form-input mono" id="robloxKey" placeholder="Paste API Key di sini">
-          <div class="form-hint">Kosongkan jika tidak ingin mengubah key yang tersimpan</div>
+          <label>Tier Kamu Saat Ini</label>
+          <div style="display:flex;align-items:center;gap:10px;padding:12px;background:var(--bg3);border-radius:8px;border:1px solid rgba(255,255,255,0.05)">
+            <span id="currentTierBadge" class="sb-tier tier-trial">TRIAL</span>
+            <span style="font-size:12px;color:rgba(200,223,240,0.5)" id="currentTierDesc">3 upload/bulan</span>
+          </div>
         </div>
-        <div id="accApiStatus" style="font-size:12px;color:var(--muted);margin-bottom:14px;display:flex;align-items:center;gap:6px">🔒 API Key dienkripsi AES-256</div>
-        <button class="btn btn-primary" onclick="saveRoblox()">Simpan</button>
+        <div class="form-group">
+          <label>Masukkan Kode Invite</label>
+        </div>
+        <div class="invite-box">
+          <input type="text" id="inviteInput" placeholder="XELLO-XXXXXX"/>
+          <button onclick="redeemInvite()">REDEEM →</button>
+        </div>
+        <div class="msg-inline" id="inviteMsg"></div>
+      </div>
+    </div>
+
+    <!-- ACCOUNT -->
+    <div class="stab-content" id="stab-account">
+      <div class="card">
+        <div class="card-title"><span>◈</span> INFO AKUN</div>
+        <div style="display:grid;grid-template-columns:1fr 1fr;gap:12px">
+          <div style="background:var(--bg3);border-radius:8px;padding:14px;border:1px solid rgba(255,255,255,0.04)">
+            <div style="font-size:9px;letter-spacing:2px;color:rgba(200,223,240,0.3);margin-bottom:6px">USERNAME</div>
+            <div style="font-size:14px;color:#fff;font-weight:600" id="accUsername">—</div>
+          </div>
+          <div style="background:var(--bg3);border-radius:8px;padding:14px;border:1px solid rgba(255,255,255,0.04)">
+            <div style="font-size:9px;letter-spacing:2px;color:rgba(200,223,240,0.3);margin-bottom:6px">TIER</div>
+            <div id="accTier">—</div>
+          </div>
+          <div style="background:var(--bg3);border-radius:8px;padding:14px;border:1px solid rgba(255,255,255,0.04)">
+            <div style="font-size:9px;letter-spacing:2px;color:rgba(200,223,240,0.3);margin-bottom:6px">TOTAL UPLOAD</div>
+            <div style="font-size:20px;font-family:Orbitron;font-weight:900;color:var(--c)" id="accTotal">0</div>
+          </div>
+          <div style="background:var(--bg3);border-radius:8px;padding:14px;border:1px solid rgba(255,255,255,0.04)">
+            <div style="font-size:9px;letter-spacing:2px;color:rgba(200,223,240,0.3);margin-bottom:6px">BULAN INI</div>
+            <div style="font-size:20px;font-family:Orbitron;font-weight:900;color:var(--c2)" id="accMonthly">0</div>
+          </div>
+        </div>
       </div>
     </div>
   </div>
-
-  <!-- PLAN -->
-  <div class="page" id="page-plan">
-    <div class="page-title">Upgrade Plan</div>
-    <div class="page-sub">Hubungi admin setelah pembayaran untuk aktivasi plan</div>
-
-    <div class="card" style="margin-bottom:16px">
-      <div class="card-body flex-between">
-        <div><div style="font-size:14px;font-weight:700">Plan Saat Ini</div><div class="text-muted" style="font-size:12px;margin-top:4px" id="currentPlanInfo">Free — 3 konversi/hari</div></div>
-        <span id="currentPlanBadge" class="badge badge-free">Free</span>
-      </div>
-    </div>
-
-    <div class="plan-grid">
-      <div class="plan-card highlight" style="position:relative">
-        <div class="plan-popular">POPULER</div>
-        <div class="plan-name">PRO 7 HARI</div>
-        <div class="plan-price">Rp 80K</div>
-        <div class="plan-period">untuk 7 hari</div>
-        <div class="plan-features">
-          <div>✓ Konversi tanpa batas</div>
-          <div>✓ Group & personal upload</div>
-          <div>✓ Durasi max 10 menit</div>
-          <div>✓ Priority queue</div>
-          <div>✓ Status moderasi realtime</div>
-        </div>
-        <button class="btn btn-primary btn-full" onclick="contactAdmin('Pro 7 Hari - Rp 80K')">Hubungi Admin</button>
-      </div>
-      <div class="plan-card">
-        <div class="plan-name">PRO 30 HARI</div>
-        <div class="plan-price">Rp 150K</div>
-        <div class="plan-period">untuk 30 hari</div>
-        <div class="plan-features">
-          <div>✓ Semua fitur Pro</div>
-          <div>✓ Hemat 50% vs 7 hari</div>
-          <div>✓ Bulk upload sekaligus</div>
-          <div>✓ Export riwayat CSV</div>
-          <div>✓ Support prioritas</div>
-        </div>
-        <button class="btn btn-outline btn-full" onclick="contactAdmin('Pro 30 Hari - Rp 150K')">Hubungi Admin</button>
-      </div>
-    </div>
-
-    <div style="margin-top:20px;background:var(--card);border:1px solid var(--border);border-radius:12px;padding:18px;font-size:13px;color:var(--muted);line-height:1.7">
-      <strong style="color:var(--text)">Cara upgrade:</strong><br>
-      1. Pilih paket di atas → klik "Hubungi Admin"<br>
-      2. Hubungi admin via Discord/WA<br>
-      3. Admin aktifkan plan kamu secara manual<br>
-      4. Refresh halaman → plan langsung aktif
-    </div>
-  </div>
-
+</main>
 </div>
 
-<!-- TOAST -->
 <div class="toast" id="toast"></div>
 
+<audio id="audioPlayer" style="display:none"></audio>
+
 <script>
-let userData = {}
-let currentTab = 'home'
+// =============================================
+// STATE
+// =============================================
+let user = null;
+let files = [];
+let currentPreviewFile = null;
+let audioCtx = null;
+let analyser = null;
+let animFrame = null;
+let robloxTab = 'user';
+let currentAudio = null;
+let isPlaying = false;
 
-// NAV
-function nav(page, btn) {
-  document.querySelectorAll('.page').forEach(p => p.classList.remove('active'))
-  document.querySelectorAll('.nav-btn').forEach(b => b.classList.remove('active'))
-  document.getElementById('page-' + page).classList.add('active')
-  if (btn) btn.classList.add('active')
-  currentTab = page
-  if (page === 'history') loadHistory()
-}
+// =============================================
+// INIT
+// =============================================
+window.onload = async () => {
+  await loadUser();
+  setupDrop();
+  initAudio();
+};
 
-// TAB SWITCHERS
-function switchTab(type, btn) {
-  document.querySelectorAll('.tabs')[0].querySelectorAll('.tab-btn').forEach(b => b.classList.remove('active'))
-  if (btn) btn.classList.add('active')
-  document.getElementById('tab-url').style.display   = type === 'url'  ? 'block' : 'none'
-  document.getElementById('tab-file').style.display  = type === 'file' ? 'block' : 'none'
-}
-
-function switchUpload(t, btn) {
-  document.querySelectorAll('.form-group .tabs .tab-btn').forEach(b => b.classList.remove('active'))
-  if (btn) btn.classList.add('active')
-}
-
-function switchAccTab(t, btn) {
-  document.querySelectorAll('#page-account .tabs .tab-btn').forEach(b => b.classList.remove('active'))
-  if (btn) btn.classList.add('active')
-}
-
-// TOAST
-function toast(msg, type = 'success') {
-  const t = document.getElementById('toast')
-  t.textContent = msg
-  t.className = `toast ${type} show`
-  setTimeout(() => t.classList.remove('show'), 3000)
-}
-
-// LOGOUT
-async function logout() {
-  await fetch('/api/logout', { method: 'POST' })
-  window.location.href = '/login'
-}
-
-// LOAD USER
-async function loadMe() {
-  const res = await fetch('/api/me')
-  if (res.status === 401) { window.location.href = '/login'; return }
-  userData = await res.json()
-
-  document.getElementById('sUsername').textContent  = userData.username
-  document.getElementById('sPlan').textContent       = userData.plan === 'pro' ? '⚡ Pro Plan' : 'Free Plan'
-  document.getElementById('sPlan').style.color       = userData.plan === 'pro' ? 'var(--accent)' : ''
-  document.getElementById('welcomeSub').textContent  = `Selamat datang, ${userData.username}!`
-  document.getElementById('statTotal').textContent   = userData.totalConversions || 0
-  document.getElementById('statRemain').textContent  = userData.plan === 'pro' ? '∞' : (userData.remainingToday ?? 3)
-  document.getElementById('convLimitNum').textContent = userData.plan === 'pro' ? '∞' : `${userData.remainingToday ?? 3}/3`
-  document.getElementById('accUsername').textContent = userData.username
-  document.getElementById('accEmail').textContent    = userData.email
-
-  // Roblox status
-  if (userData.robloxConnected) {
-    document.getElementById('statRoblox').innerHTML = `<span class="badge badge-green">● Terhubung</span>`
-    document.getElementById('robloxUid').value      = userData.robloxUserId || ''
-    document.getElementById('accApiStatus').innerHTML = `✅ API Key tersimpan • UID: ${userData.robloxUserId}`
-  }
-
-  // Plan
-  const planBadge = userData.plan === 'pro'
-    ? `<span class="badge badge-pro">⚡ Pro</span>` : `<span class="badge badge-free">Free</span>`
-  document.getElementById('statPlan').innerHTML      = planBadge
-  document.getElementById('currentPlanBadge').outerHTML = planBadge
-
-  if (userData.planExpiry) {
-    const exp = new Date(userData.planExpiry).toLocaleDateString('id-ID')
-    document.getElementById('currentPlanInfo').textContent = `Pro — aktif hingga ${exp}`
-  }
-
-  // Recent conversions
-  if (userData.conversions && userData.conversions.length) {
-    renderRecentList(userData.conversions.slice(0, 5))
+async function loadUser(){
+  try{
+    const r = await fetch('/api/me');
+    const data = await r.json();
+    if(!data.authenticated){location.href='/?modal=login';return;}
+    user = data;
+    updateSidebar();
+  }catch(e){
+    location.href='/?modal=login';
   }
 }
 
-function renderRecentList(convs) {
-  if (!convs.length) return
-  document.getElementById('recentList').innerHTML = `
-    <table class="table">
-      <thead><tr><th>NAMA</th><th>ASSET ID</th><th>SPEED</th><th>STATUS</th></tr></thead>
-      <tbody>${convs.map(c => `
-        <tr>
-          <td style="max-width:180px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap">${c.name}</td>
-          <td><span class="mono text-accent" style="cursor:pointer;font-size:12px" onclick="copyId('${c.assetId}')" title="Klik untuk copy">${c.assetId}</span></td>
-          <td><span class="mono" style="font-size:12px">${c.speed}x</span></td>
-          <td><span class="badge ${c.status==='ok'?'badge-green':c.status==='rejected'?'badge-red':'badge-yellow'}">${c.status}</span></td>
-        </tr>`).join('')}
-      </tbody>
-    </table>`
+function updateSidebar(){
+  document.getElementById('sbName').textContent = user.username;
+  document.getElementById('sbAvatar').textContent = user.username[0].toUpperCase();
+  const tierEl = document.getElementById('sbTier');
+  tierEl.textContent = user.tier.toUpperCase();
+  tierEl.className = `sb-tier tier-${user.tier}`;
+
+  // Quota
+  const pct = user.tier==='pro' ? 10 : Math.min(100,(user.uploads_this_month/user.tier_limit)*100);
+  document.getElementById('quotaBar').style.width = pct+'%';
+  document.getElementById('quotaUsed').textContent = `${user.uploads_this_month}/${user.tier==='pro'?'∞':user.tier_limit}`;
+  document.getElementById('quotaLeft').textContent = `Sisa: ${user.remaining}`;
+
+  // No API warn
+  document.getElementById('noApiWarn').style.display = user.has_api_key ? 'none' : 'flex';
+
+  // Settings page
+  document.getElementById('accUsername').textContent = user.username;
+  document.getElementById('accTotal').textContent = user.total_uploads;
+  document.getElementById('accMonthly').textContent = user.uploads_this_month;
+  const ab = document.getElementById('accTier');
+  ab.innerHTML = `<span class="sb-tier tier-${user.tier}">${user.tier.toUpperCase()}</span>`;
+
+  // Invite page
+  const ctb = document.getElementById('currentTierBadge');
+  ctb.textContent = user.tier.toUpperCase();
+  ctb.className = `sb-tier tier-${user.tier}`;
+  document.getElementById('currentTierDesc').textContent =
+    user.tier==='pro'?'Unlimited upload/bulan':
+    user.tier==='beginner'?'50 upload/bulan':'3 upload/bulan';
+
+  // Pre-fill roblox settings
+  if(user.roblox_user_id) document.getElementById('rxUserId').value = user.roblox_user_id;
+  if(user.roblox_group_id) document.getElementById('rxGroupId').value = user.roblox_group_id;
+  if(user.roblox_user_id) document.getElementById('rxGroupUserId').value = user.roblox_user_id;
+  if(user.creator_type==='group') switchRobloxTab('group');
 }
 
-function copyId(id) {
-  navigator.clipboard.writeText(id)
-  toast('✅ Asset ID disalin: ' + id)
+// =============================================
+// NAVIGATION
+// =============================================
+function goPage(page){
+  document.querySelectorAll('.page-section').forEach(s=>s.classList.remove('active'));
+  document.querySelectorAll('.sb-nav a').forEach(a=>a.classList.remove('active'));
+  document.getElementById('page-'+page).classList.add('active');
+  document.getElementById('nav-'+page).classList.add('active');
+  if(page==='history') loadHistory();
 }
 
-async function loadHistory() {
-  const res  = await fetch('/api/me')
-  const data = await res.json()
-  if (!data.conversions || !data.conversions.length) {
-    document.getElementById('historyContent').innerHTML = `<div class="empty"><div class="empty-icon">📋</div><div class="empty-title">Belum ada riwayat</div></div>`
-    return
-  }
-  document.getElementById('historyContent').innerHTML = `
-    <table class="table">
-      <thead><tr><th>NAMA</th><th>ASSET ID</th><th>SPEED</th><th>AMP</th><th>STATUS</th><th>TANGGAL</th></tr></thead>
-      <tbody>${data.conversions.map(c => `
-        <tr>
-          <td style="max-width:160px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap">${c.name}</td>
-          <td><span class="mono text-accent" style="cursor:pointer;font-size:11px" onclick="copyId('${c.assetId}')">${c.assetId} 📋</span></td>
-          <td class="mono" style="font-size:12px">${c.speed}x</td>
-          <td class="mono" style="font-size:12px">${c.amplify}dB</td>
-          <td><span class="badge ${c.status==='ok'?'badge-green':c.status==='rejected'?'badge-red':'badge-yellow'}">${c.status}</span></td>
-          <td class="text-muted" style="font-size:11px">${new Date(c.createdAt).toLocaleDateString('id-ID')}</td>
-        </tr>`).join('')}
-      </tbody>
-    </table>`
+function switchStab(tab){
+  document.querySelectorAll('.stab-content').forEach(s=>s.classList.remove('active'));
+  document.querySelectorAll('.settings-tabs .stab').forEach(s=>s.classList.remove('active'));
+  document.getElementById('stab-'+tab).classList.add('active');
+  event.target.classList.add('active');
 }
 
-// CONVERT
-async function doConvert() {
-  const url = document.getElementById('audioUrl').value.trim()
-  if (!url) { toast('Masukkan URL YouTube/SoundCloud!', 'error'); return }
+function switchRobloxTab(type){
+  robloxTab = type;
+  document.getElementById('robloxPersonal').style.display = type==='user'?'block':'none';
+  document.getElementById('robloxGroup').style.display = type==='group'?'block':'none';
+  document.getElementById('rtabPersonal').classList.toggle('active', type==='user');
+  document.getElementById('rtabGroup').classList.toggle('active', type==='group');
+}
 
-  const speed  = document.querySelectorAll('input[type=range]')[0].value / 10
-  const amp    = document.getElementById('slAmp').value
-  const dur    = document.getElementById('slDur').value
+// =============================================
+// FILE HANDLING
+// =============================================
+function setupDrop(){
+  const dz = document.getElementById('dropZone');
+  const fi = document.getElementById('fileInput');
+  dz.addEventListener('dragover',e=>{e.preventDefault();dz.classList.add('drag-over')});
+  dz.addEventListener('dragleave',()=>dz.classList.remove('drag-over'));
+  dz.addEventListener('drop',e=>{e.preventDefault();dz.classList.remove('drag-over');addFiles(Array.from(e.dataTransfer.files))});
+  fi.addEventListener('change',()=>{addFiles(Array.from(fi.files));fi.value='';});
+}
 
-  document.getElementById('progressBox').style.display = 'block'
-  const fill = document.getElementById('progressFill')
-  const txt  = document.getElementById('progressText')
+function addFiles(newFiles){
+  const mp3s = newFiles.filter(f=>f.type==='audio/mpeg'||f.name.endsWith('.mp3'));
+  if(!mp3s.length){toast('Hanya file MP3 yang didukung','error');return;}
+  mp3s.forEach(f=>{ if(!files.find(x=>x.name===f.name&&x.size===f.size)) files.push(f); });
+  renderFiles();
+  if(files.length && !currentPreviewFile) setPreview(files[0]);
+}
 
-  const steps = [
-    [20, '🔄 Mengambil audio...'],
-    [50, '⚙️ Mengkonversi tempo...'],
-    [80, '📤 Mengupload ke Roblox...'],
-    [100,'✅ Selesai!'],
-  ]
-  let si = 0
-  const iv = setInterval(() => {
-    if (si >= steps.length) { clearInterval(iv); return }
-    fill.style.width  = steps[si][0] + '%'
-    txt.textContent   = steps[si][1]
-    si++
-  }, 1000)
+function renderFiles(){
+  const list = document.getElementById('fileList');
+  if(!files.length){list.innerHTML='';document.getElementById('uploadBtn').disabled=true;document.getElementById('previewBox').style.display='none';return;}
+  document.getElementById('uploadBtn').disabled=false;
+  list.innerHTML = files.map((f,i)=>`
+    <div class="file-item" id="fi-${i}">
+      <span class="fi-icon">🎵</span>
+      <span class="fi-name">${f.name}</span>
+      <span class="fi-size">${(f.size/1024).toFixed(0)}KB</span>
+      <button class="fi-play" onclick="setPreview(files[${i}])" title="Preview">▶</button>
+      <span class="fi-status pending" id="fis-${i}">—</span>
+      <button class="fi-remove" onclick="removeFile(${i})">✕</button>
+    </div>
+  `).join('');
+}
 
-  const res  = await fetch('/api/convert', {
-    method: 'POST',
-    headers: { 'Content-Type': 'application/json' },
-    body: JSON.stringify({ url, speed, amplify: amp, duration: dur })
-  })
-  const data = await res.json()
-  clearInterval(iv)
+function removeFile(i){
+  if(currentPreviewFile===files[i]){stopPreview();currentPreviewFile=null;document.getElementById('previewBox').style.display='none';}
+  files.splice(i,1);
+  renderFiles();
+  if(files.length && !currentPreviewFile) setPreview(files[0]);
+}
 
-  setTimeout(() => {
-    document.getElementById('progressBox').style.display = 'none'
-    fill.style.width = '0'
-    if (data.success) {
-      toast(`✅ Upload berhasil! ID: ${data.conversion.assetId}`)
-      loadMe()
+// =============================================
+// AUDIO PREVIEW
+// =============================================
+const audioEl = document.getElementById('audioPlayer');
+
+function initAudio(){
+  audioEl.addEventListener('timeupdate', updateProgress);
+  audioEl.addEventListener('ended', ()=>{isPlaying=false;document.getElementById('prevPlayBtn').textContent='▶';});
+}
+
+function setPreview(file){
+  stopPreview();
+  currentPreviewFile = file;
+  const url = URL.createObjectURL(file);
+  audioEl.src = url;
+  document.getElementById('previewBox').style.display='block';
+  document.getElementById('prevName').textContent = file.name;
+  document.getElementById('prevPlayBtn').textContent='▶';
+  isPlaying = false;
+  audioEl.load();
+  audioEl.addEventListener('loadedmetadata', ()=>{
+    document.getElementById('prevTime').textContent = `0:00 / ${fmtTime(audioEl.duration)}`;
+    drawWave(file);
+  }, {once:true});
+}
+
+function togglePlay(){
+  if(!currentPreviewFile) return;
+  if(isPlaying){audioEl.pause();isPlaying=false;document.getElementById('prevPlayBtn').textContent='▶';}
+  else{audioEl.play();isPlaying=true;document.getElementById('prevPlayBtn').textContent='⏸';}
+}
+
+function stopPreview(){
+  audioEl.pause();
+  audioEl.src='';
+  isPlaying=false;
+}
+
+function updateProgress(){
+  const pct = (audioEl.currentTime/audioEl.duration)*100||0;
+  document.getElementById('prevProgress').style.width=pct+'%';
+  document.getElementById('prevTime').textContent = `${fmtTime(audioEl.currentTime)} / ${fmtTime(audioEl.duration)}`;
+}
+
+function seekAudio(e){
+  const rect = document.getElementById('prevProgressWrap').getBoundingClientRect();
+  const pct = (e.clientX-rect.left)/rect.width;
+  audioEl.currentTime = pct * audioEl.duration;
+}
+
+function fmtTime(s){
+  if(!s||isNaN(s))return'0:00';
+  const m=Math.floor(s/60),sec=Math.floor(s%60);
+  return `${m}:${sec.toString().padStart(2,'0')}`;
+}
+
+function drawWave(file){
+  const canvas = document.getElementById('waveCanvas');
+  const ctx = canvas.getContext('2d');
+  const W = canvas.offsetWidth * window.devicePixelRatio || 600;
+  const H = 40;
+  canvas.width = W; canvas.height = H;
+  const reader = new FileReader();
+  reader.onload = async e => {
+    try{
+      const tmpCtx = new (window.AudioContext||window.webkitAudioContext)();
+      const buf = await tmpCtx.decodeAudioData(e.target.result);
+      const data = buf.getChannelData(0);
+      const step = Math.ceil(data.length/W);
+      ctx.clearRect(0,0,W,H);
+      ctx.strokeStyle = 'rgba(0,229,255,0.6)';
+      ctx.lineWidth = 1;
+      ctx.beginPath();
+      for(let i=0;i<W;i++){
+        let max=0;
+        for(let j=0;j<step;j++){const val=Math.abs(data[i*step+j]||0);if(val>max)max=val;}
+        const y = (1-max)*H/2;
+        if(i===0)ctx.moveTo(i,y);else ctx.lineTo(i,y);
+      }
+      ctx.stroke();
+      tmpCtx.close();
+    }catch(e){}
+  };
+  reader.readAsArrayBuffer(file);
+}
+
+// =============================================
+// PROCESSOR UI
+// =============================================
+function updateTempo(el){
+  const v = (el.value/10).toFixed(1);
+  el.style.setProperty('--p', ((el.value-10)/30*100)+'%');
+  document.getElementById('tempoVal').textContent = v+'×';
+  document.getElementById('tempoLabel').textContent = v+'x';
+  document.getElementById('tempoInfo').textContent = v+'x';
+  document.getElementById('playInfo').textContent = (1/parseFloat(v)).toFixed(2)+'x';
+}
+function updatePitch(el){
+  const v = parseInt(el.value);
+  const pct = ((v+12)/24*100);
+  el.style.setProperty('--p', pct+'%');
+  document.getElementById('pitchVal').textContent = (v>=0?'+':'')+v+'st';
+  document.getElementById('pitchLabel').textContent = (v>=0?'+':'')+v+'st';
+}
+function updateTempoUI(){
+  const on = document.getElementById('tempoToggle').checked;
+  document.getElementById('tempoRange').disabled = !on;
+  document.getElementById('pitchRange').disabled = !on;
+  document.querySelectorAll('.proc-block').forEach(b=>b.style.opacity=on?1:0.4);
+}
+
+// Init sliders
+updateTempo(document.getElementById('tempoRange'));
+updatePitch(document.getElementById('pitchRange'));
+updateTempoUI();
+
+// =============================================
+// UPLOAD
+// =============================================
+async function startUpload(){
+  if(!files.length) return;
+  const btn = document.getElementById('uploadBtn');
+  btn.disabled=true;
+  document.getElementById('uploadProgress').style.display='block';
+  document.getElementById('resultsBox').style.display='none';
+  document.getElementById('resultsBox').innerHTML='';
+
+  const fd = new FormData();
+  files.forEach(f=>fd.append('files',f));
+  fd.append('processTempo', document.getElementById('tempoToggle').checked);
+  fd.append('tempoMultiplier', (document.getElementById('tempoRange').value/10).toFixed(1));
+  fd.append('pitchShift', document.getElementById('pitchRange').value);
+
+  // set all to uploading
+  files.forEach((_,i)=>{
+    const s = document.getElementById('fis-'+i);
+    if(s){s.textContent='⏳';s.className='fi-status uploading';}
+  });
+
+  document.getElementById('upBar').style.width='30%';
+  document.getElementById('upStatus').textContent='Mengupload ke Roblox...';
+
+  try{
+    const r = await fetch('/api/upload',{method:'POST',body:fd});
+    const d = await r.json();
+
+    if(!r.ok){
+      toast(d.error||'Upload gagal','error');
+      files.forEach((_,i)=>{const s=document.getElementById('fis-'+i);if(s){s.textContent='❌';s.className='fi-status failed';}});
+      document.getElementById('upBar').style.width='100%';
+      document.getElementById('upStatus').textContent='Gagal: '+d.error;
     } else {
-      toast('❌ ' + (data.error || 'Gagal'), 'error')
+      document.getElementById('upBar').style.width='100%';
+      document.getElementById('upStatus').textContent=`✅ Selesai: ${d.success}/${d.total} berhasil`;
+      
+      const rb = document.getElementById('resultsBox');
+      rb.style.display='block';
+      rb.innerHTML = d.results.map(r=>`
+        <div class="result-card ${r.status==='SUCCESS'?'':'fail'}">
+          <span class="rc-icon">${r.status==='SUCCESS'?'✅':'❌'}</span>
+          <div>
+            <div class="rc-name">${r.file||r.filename}</div>
+            ${r.status==='SUCCESS'
+              ? `<div class="rc-asset">Asset ID: ${r.asset_id} <button class="copy-btn" onclick="copyText('${r.asset_id}')">COPY</button></div>`
+              : `<div class="rc-err">${r.error_msg||'Upload gagal'}</div>`
+            }
+          </div>
+        </div>
+      `).join('');
+
+      d.results.forEach((res,i)=>{
+        const fi = files.findIndex(f=>f.name===res.file||f.name===res.filename);
+        if(fi>=0){
+          const s=document.getElementById('fis-'+fi);
+          if(s){s.textContent=res.status==='SUCCESS'?'✅':'❌';s.className='fi-status '+(res.status==='SUCCESS'?'success':'failed');}
+        }
+      });
+
+      toast(`${d.success}/${d.total} file berhasil diupload!`, d.success>0?'success':'error');
+      await loadUser(); // refresh quota
     }
-  }, 500)
-}
-
-// SAVE ROBLOX
-async function saveRoblox() {
-  const uid = document.getElementById('robloxUid').value.trim()
-  const key = document.getElementById('robloxKey').value.trim()
-  if (!uid) { toast('Masukkan Roblox User ID!', 'error'); return }
-
-  const res  = await fetch('/api/roblox', {
-    method: 'POST',
-    headers: { 'Content-Type': 'application/json' },
-    body: JSON.stringify({ userId: uid, apiKey: key })
-  })
-  const data = await res.json()
-  if (data.success) {
-    toast('✅ Akun Roblox berhasil dihubungkan!')
-    loadMe()
-  } else {
-    toast('❌ ' + data.error, 'error')
+  }catch(e){
+    toast('Koneksi error: '+e.message,'error');
+    document.getElementById('upStatus').textContent='Error koneksi';
   }
+
+  btn.disabled = files.length===0;
 }
 
-function contactAdmin(plan) {
-  toast(`Hubungi admin untuk aktivasi: ${plan}`)
+// =============================================
+// HISTORY
+// =============================================
+async function loadHistory(){
+  const container = document.getElementById('histContent');
+  container.innerHTML = '<div class="empty-state"><span class="ei">⏳</span>Loading...</div>';
+  try{
+    const r = await fetch('/api/history');
+    const data = await r.json();
+    if(!data.length){container.innerHTML='<div class="empty-state"><span class="ei">📭</span>Belum ada upload</div>';return;}
+    container.innerHTML = `
+      <div style="overflow-x:auto">
+      <table class="hist-table">
+        <thead><tr>
+          <th>File</th><th>Asset ID</th><th>Status</th><th>Tanggal</th><th></th>
+        </tr></thead>
+        <tbody>${data.map(h=>`
+          <tr>
+            <td style="max-width:180px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis">${h.filename}</td>
+            <td>${h.asset_id?`<span class="asset-id">${h.asset_id}</span> <button class="copy-btn" onclick="copyText('${h.asset_id}')">COPY</button>`:'—'}</td>
+            <td><span class="status-badge ${h.status==='SUCCESS'?'success':'failed'}">${h.status}</span></td>
+            <td style="font-size:11px;color:rgba(200,223,240,0.35);font-family:Space Mono">${h.created_at?h.created_at.slice(0,16).replace('T',' '):'—'}</td>
+            <td><button onclick="deleteHistory('${h.id}')" style="background:none;border:none;color:rgba(255,45,107,0.4);cursor:pointer;font-size:14px" title="Hapus">✕</button></td>
+          </tr>
+        `).join('')}</tbody>
+      </table>
+      </div>`;
+  }catch(e){container.innerHTML='<div class="empty-state">Error loading history</div>';}
 }
 
-loadMe()
+async function deleteHistory(id){
+  await fetch('/api/history/'+id,{method:'DELETE'});
+  loadHistory();
+}
+
+// =============================================
+// SETTINGS
+// =============================================
+async function saveRoblox(){
+  const body = {creator_type: robloxTab};
+  if(robloxTab==='user'){
+    body.roblox_user_id = document.getElementById('rxUserId').value.trim();
+    body.roblox_api_key = document.getElementById('rxApiKey').value.trim();
+  } else {
+    body.roblox_group_id = document.getElementById('rxGroupId').value.trim();
+    body.roblox_user_id = document.getElementById('rxGroupUserId').value.trim();
+    body.roblox_group_api_key = document.getElementById('rxGroupApiKey').value.trim();
+  }
+  const r = await fetch('/api/settings/roblox',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify(body)});
+  const d = await r.json();
+  const msgEl = document.getElementById('robloxMsg');
+  msgEl.textContent = d.message || d.error;
+  msgEl.className = 'msg-inline ' + (d.success?'success':'error');
+  if(d.success){await loadUser();toast('Roblox account berhasil dihubungkan!','success');}
+}
+
+async function redeemInvite(){
+  const code = document.getElementById('inviteInput').value.trim();
+  if(!code){return;}
+  const r = await fetch('/api/invite/redeem',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({code})});
+  const d = await r.json();
+  const msgEl = document.getElementById('inviteMsg');
+  msgEl.textContent = d.message || d.error;
+  msgEl.className = 'msg-inline ' + (d.success?'success':'error');
+  if(d.success){await loadUser();toast('Tier berhasil diupgrade! 🎉','success');}
+}
+
+async function doLogout(){
+  await fetch('/api/auth/logout',{method:'POST'});
+  location.href='/';
+}
+
+// =============================================
+// UTILS
+// =============================================
+function copyText(text){
+  navigator.clipboard.writeText(text).then(()=>toast('Asset ID disalin!','success'));
+}
+
+function toast(msg, type=''){
+  const el = document.getElementById('toast');
+  el.textContent=msg;
+  el.className='toast '+type+' show';
+  setTimeout(()=>el.classList.remove('show'),3000);
+}
 </script>
 </body>
 </html>

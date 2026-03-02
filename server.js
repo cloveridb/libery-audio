@@ -1,435 +1,554 @@
-require('dotenv').config()
-const express  = require('express')
-const session  = require('express-session')
-const bcrypt   = require('bcryptjs')
-const path     = require('path')
-const crypto   = require('crypto')
-const fs       = require('fs')
-const multer   = require('multer')
+const express = require("express");
+const multer = require("multer");
+const axios = require("axios");
+const cors = require("cors");
+const FormData = require("form-data");
+const path = require("path");
+const fs = require("fs");
+const { execFile } = require("child_process");
+const os = require("os");
+const session = require("express-session");
+const bcrypt = require("bcryptjs");
+const { v4: uuidv4 } = require("uuid");
+const Database = require("better-sqlite3");
+require("dotenv").config();
 
-const app = express()
-
-// ============================================================
-// DATABASE (JSON — simpel, tidak perlu install apapun)
-// ============================================================
-const DB_FILE = path.join(__dirname, 'db.json')
-
-function loadDB() {
-  if (!fs.existsSync(DB_FILE)) {
-    const init = { users: {}, conversions: {} }
-    fs.writeFileSync(DB_FILE, JSON.stringify(init, null, 2))
-    return init
-  }
-  try { return JSON.parse(fs.readFileSync(DB_FILE, 'utf8')) }
-  catch { return { users: {}, conversions: {} } }
-}
-
-function saveDB(db) {
-  fs.writeFileSync(DB_FILE, JSON.stringify(db, null, 2))
-}
-
-function getUser(username) {
-  return loadDB().users[username.toLowerCase()] || null
-}
-
-function getUserById(id) {
-  const db = loadDB()
-  return Object.values(db.users).find(u => u.id === id) || null
-}
-
-function saveUser(username, data) {
-  const db = loadDB()
-  const key = username.toLowerCase()
-  db.users[key] = { ...db.users[key], ...data }
-  saveDB(db)
-  return db.users[key]
-}
-
-function getAllUsers() {
-  return Object.values(loadDB().users)
-}
+const app = express();
+const PORT = process.env.PORT || 1179;
 
 // ============================================================
-// ENCRYPT / DECRYPT API KEY
+// DATABASE
 // ============================================================
-const ENC_KEY = (process.env.ENCRYPT_KEY || 'liberyaudio_key_change_this_32ch!').slice(0, 32)
+const dataDir = path.join(__dirname, "data");
+if (!fs.existsSync(dataDir)) fs.mkdirSync(dataDir, { recursive: true });
 
-function encrypt(text) {
-  if (!text) return ''
-  const iv     = crypto.randomBytes(16)
-  const cipher = crypto.createCipheriv('aes-256-cbc', Buffer.from(ENC_KEY), iv)
-  const enc    = Buffer.concat([cipher.update(text), cipher.final()])
-  return iv.toString('hex') + ':' + enc.toString('hex')
-}
+const db = new Database(path.join(dataDir, "xello.sqlite"));
+db.exec(`
+  CREATE TABLE IF NOT EXISTS users (
+    id TEXT PRIMARY KEY,
+    username TEXT UNIQUE NOT NULL,
+    password_hash TEXT NOT NULL,
+    email TEXT,
+    tier TEXT DEFAULT 'trial',
+    uploads_this_month INTEGER DEFAULT 0,
+    total_uploads INTEGER DEFAULT 0,
+    month_reset TEXT DEFAULT '',
+    roblox_user_id TEXT,
+    roblox_api_key TEXT,
+    roblox_group_id TEXT,
+    roblox_group_api_key TEXT,
+    creator_type TEXT DEFAULT 'user',
+    is_active INTEGER DEFAULT 1,
+    created_at TEXT DEFAULT (datetime('now'))
+  );
 
-function decrypt(text) {
-  if (!text) return ''
-  try {
-    const [ivHex, encHex] = text.split(':')
-    const decipher = crypto.createDecipheriv('aes-256-cbc', Buffer.from(ENC_KEY), Buffer.from(ivHex, 'hex'))
-    return Buffer.concat([decipher.update(Buffer.from(encHex, 'hex')), decipher.final()]).toString()
-  } catch { return '' }
-}
+  CREATE TABLE IF NOT EXISTS invite_codes (
+    id TEXT PRIMARY KEY,
+    code TEXT UNIQUE NOT NULL,
+    tier TEXT NOT NULL,
+    max_uses INTEGER DEFAULT 1,
+    uses INTEGER DEFAULT 0,
+    created_by TEXT DEFAULT 'admin',
+    expires_at TEXT,
+    is_active INTEGER DEFAULT 1,
+    created_at TEXT DEFAULT (datetime('now'))
+  );
+
+  CREATE TABLE IF NOT EXISTS upload_history (
+    id TEXT PRIMARY KEY,
+    user_id TEXT NOT NULL,
+    filename TEXT,
+    asset_id TEXT,
+    operation_id TEXT,
+    status TEXT DEFAULT 'PENDING',
+    error_msg TEXT,
+    tempo_multiplier REAL DEFAULT 1,
+    pitch_shift REAL DEFAULT 0,
+    file_size INTEGER DEFAULT 0,
+    created_at TEXT DEFAULT (datetime('now')),
+    FOREIGN KEY(user_id) REFERENCES users(id)
+  );
+`);
+
+// ============================================================
+// TIER CONFIG
+// ============================================================
+const TIERS = {
+  trial:    { label: "Trial",    limit: parseInt(process.env.TIER_TRIAL_LIMIT)    || 3,      color: "#ff9800" },
+  beginner: { label: "Beginner", limit: parseInt(process.env.TIER_BEGINNER_LIMIT) || 50,     color: "#2196f3" },
+  pro:      { label: "Pro",      limit: parseInt(process.env.TIER_PRO_LIMIT)      || 999999, color: "#00e5ff" }
+};
 
 // ============================================================
 // HELPERS
 // ============================================================
-function getTodayKey() {
-  const d = new Date()
-  return `${d.getFullYear()}-${d.getMonth()+1}-${d.getDate()}`
+function log(msg, type = "info") {
+  const prefix = { error: "❌", success: "✅", warn: "⚠️", info: "ℹ️" }[type] || "ℹ️";
+  console.log(`[${new Date().toISOString()}] ${prefix} ${msg}`);
 }
 
-function getRemainingToday(user) {
-  if (user.plan === 'pro') return 999
-  if (!user.plan || user.plan === 'free') {
-    const today = getTodayKey()
-    if (user.dailyReset !== today) return 3
-    return Math.max(0, 3 - (user.dailyUsed || 0))
+function checkResetMonthly(userId) {
+  const user = db.prepare("SELECT * FROM users WHERE id = ?").get(userId);
+  const currentMonth = new Date().toISOString().slice(0, 7);
+  if (user.month_reset !== currentMonth) {
+    db.prepare("UPDATE users SET uploads_this_month = 0, month_reset = ? WHERE id = ?")
+      .run(currentMonth, userId);
+    return db.prepare("SELECT * FROM users WHERE id = ?").get(userId);
   }
-  return 0
+  return user;
 }
 
-function isPlanActive(user) {
-  if (user.plan === 'free' || !user.plan) return true
-  if (user.plan === 'pro') {
-    if (!user.planExpiry) return false
-    return new Date(user.planExpiry) > new Date()
-  }
-  return false
+function userSafeData(user) {
+  const tier = TIERS[user.tier] || TIERS.trial;
+  const remaining = user.tier === "pro" ? "Unlimited" : Math.max(0, tier.limit - user.uploads_this_month);
+  return {
+    authenticated: true,
+    id: user.id,
+    username: user.username,
+    email: user.email,
+    tier: user.tier,
+    tier_label: tier.label,
+    tier_color: tier.color,
+    tier_limit: tier.limit,
+    uploads_this_month: user.uploads_this_month,
+    total_uploads: user.total_uploads,
+    remaining,
+    roblox_user_id: user.roblox_user_id,
+    roblox_group_id: user.roblox_group_id,
+    creator_type: user.creator_type,
+    has_api_key: !!(user.roblox_api_key || user.roblox_group_api_key),
+    is_active: user.is_active,
+    created_at: user.created_at
+  };
 }
 
 // ============================================================
 // MIDDLEWARE
 // ============================================================
-app.use(express.json())
-app.use(express.urlencoded({ extended: true }))
-app.use(express.static(path.join(__dirname, 'public')))
+app.use(cors());
+app.use(express.json());
+app.use(express.urlencoded({ extended: true }));
+// Bypass localtunnel password screen
+app.use((req, res, next) => {
+  res.setHeader("bypass-tunnel-reminder", "true");
+  next();
+});
 app.use(session({
-  secret: process.env.SESSION_SECRET || 'libery-change-this',
+  secret: process.env.SESSION_SECRET || "xello_fallback_secret",
   resave: false,
   saveUninitialized: false,
   cookie: { maxAge: 7 * 24 * 60 * 60 * 1000 }
-}))
+}));
+app.use(express.static(path.join(__dirname, "public")));
 
-// Auth check middlewares
-function requireLogin(req, res, next) {
-  if (req.session.userId) return next()
-  res.redirect('/login')
+function requireAuth(req, res, next) {
+  if (req.session.userId) return next();
+  res.status(401).json({ error: "Login required" });
 }
 
 function requireAdmin(req, res, next) {
-  if (!req.session.userId) return res.redirect('/login')
-  const user = getUserById(req.session.userId)
-  if (!user || user.role !== 'admin') return res.redirect('/dashboard')
-  next()
+  if (req.session.isAdmin) return next();
+  res.status(403).json({ error: "Admin only" });
 }
 
 // ============================================================
-// STATIC PAGES
-// ============================================================
-app.get('/',         (req, res) => res.sendFile(path.join(__dirname, 'public', 'index.html')))
-app.get('/login',    (req, res) => {
-  if (req.session.userId) return res.redirect('/dashboard')
-  res.sendFile(path.join(__dirname, 'public', 'login.html'))
-})
-app.get('/register', (req, res) => {
-  if (req.session.userId) return res.redirect('/dashboard')
-  res.sendFile(path.join(__dirname, 'public', 'register.html'))
-})
-app.get('/dashboard', requireLogin, (req, res) => res.sendFile(path.join(__dirname, 'public', 'dashboard.html')))
-app.get('/admin',     requireAdmin, (req, res) => res.sendFile(path.join(__dirname, 'public', 'admin.html')))
-
-// ============================================================
-// AUTH API
+// AUTH ROUTES
 // ============================================================
 
-// REGISTER
-app.post('/api/register', async (req, res) => {
-  const { username, email, password } = req.body
-  if (!username || !email || !password)
-    return res.json({ success: false, error: 'Semua field wajib diisi' })
-  if (password.length < 6)
-    return res.json({ success: false, error: 'Password minimal 6 karakter' })
+// Register
+app.post("/api/auth/register", async (req, res) => {
+  try {
+    const { username, password, email, invite_code } = req.body;
+    if (!username || !password) return res.status(400).json({ error: "Username dan password wajib diisi" });
+    if (username.length < 3) return res.status(400).json({ error: "Username minimal 3 karakter" });
+    if (password.length < 6) return res.status(400).json({ error: "Password minimal 6 karakter" });
 
-  const existing = getUser(username)
-  if (existing)
-    return res.json({ success: false, error: 'Username sudah digunakan' })
+    const exists = db.prepare("SELECT id FROM users WHERE username = ?").get(username.toLowerCase());
+    if (exists) return res.status(400).json({ error: "Username sudah digunakan" });
 
-  // Cek email juga
-  const emailUsed = getAllUsers().find(u => u.email === email.toLowerCase())
-  if (emailUsed)
-    return res.json({ success: false, error: 'Email sudah terdaftar' })
+    let assignedTier = "trial";
 
-  const hash = await bcrypt.hash(password, 10)
-  const id   = crypto.randomUUID()
+    // Check invite code
+    if (invite_code && invite_code.trim()) {
+      const code = db.prepare("SELECT * FROM invite_codes WHERE code = ? AND is_active = 1").get(invite_code.trim().toUpperCase());
+      if (!code) return res.status(400).json({ error: "Kode invite tidak valid atau sudah tidak aktif" });
+      if (code.max_uses > 0 && code.uses >= code.max_uses) return res.status(400).json({ error: "Kode invite sudah mencapai batas penggunaan" });
+      if (code.expires_at && new Date(code.expires_at) < new Date()) return res.status(400).json({ error: "Kode invite sudah expired" });
+      assignedTier = code.tier;
+      db.prepare("UPDATE invite_codes SET uses = uses + 1 WHERE id = ?").run(code.id);
+      if (code.max_uses > 0 && code.uses + 1 >= code.max_uses) {
+        db.prepare("UPDATE invite_codes SET is_active = 0 WHERE id = ?").run(code.id);
+      }
+    }
 
-  saveUser(username, {
-    id,
-    username:        username.toLowerCase(),
-    email:           email.toLowerCase(),
-    passwordHash:    hash,
-    role:            'user',
-    plan:            'free',
-    planExpiry:      null,
-    robloxUserId:    null,
-    robloxApiKeyEnc: null,
-    totalConversions: 0,
-    dailyUsed:        0,
-    dailyReset:       getTodayKey(),
-    conversions:      [],
-    createdAt:        new Date().toISOString(),
-  })
+    const hash = await bcrypt.hash(password, 10);
+    const userId = uuidv4();
+    const currentMonth = new Date().toISOString().slice(0, 7);
+    db.prepare(`
+      INSERT INTO users (id, username, password_hash, email, tier, month_reset)
+      VALUES (?, ?, ?, ?, ?, ?)
+    `).run(userId, username.toLowerCase(), hash, email || null, assignedTier, currentMonth);
 
-  req.session.userId = id
-  res.json({ success: true })
-})
-
-// LOGIN
-app.post('/api/login', async (req, res) => {
-  const { username, password } = req.body
-  if (!username || !password)
-    return res.json({ success: false, error: 'Username dan password wajib diisi' })
-
-  const user = getUser(username)
-  if (!user)
-    return res.json({ success: false, error: 'Username atau password salah' })
-
-  const match = await bcrypt.compare(password, user.passwordHash)
-  if (!match)
-    return res.json({ success: false, error: 'Username atau password salah' })
-
-  // Cek plan expiry
-  if (user.plan === 'pro' && user.planExpiry && new Date(user.planExpiry) < new Date()) {
-    saveUser(user.username, { plan: 'free', planExpiry: null })
+    log(`New user registered: ${username} (tier: ${assignedTier})`);
+    res.json({ success: true, message: `Akun berhasil dibuat! Tier kamu: ${TIERS[assignedTier].label}` });
+  } catch (e) {
+    log(e.message, "error");
+    res.status(500).json({ error: "Server error" });
   }
+});
 
-  req.session.userId = user.id
-  const isAdmin = user.role === 'admin'
-  res.json({ success: true, redirect: isAdmin ? '/admin' : '/dashboard' })
-})
+// Login
+app.post("/api/auth/login", async (req, res) => {
+  try {
+    const { username, password } = req.body;
+    if (!username || !password) return res.status(400).json({ error: "Isi username dan password" });
 
-// LOGOUT
-app.post('/api/logout', (req, res) => {
-  req.session.destroy(() => res.json({ success: true }))
-})
+    const user = db.prepare("SELECT * FROM users WHERE username = ?").get(username.toLowerCase());
+    if (!user) return res.status(401).json({ error: "Username atau password salah" });
+    if (!user.is_active) return res.status(403).json({ error: "Akun kamu dinonaktifkan. Hubungi admin." });
 
-// ============================================================
-// USER API
-// ============================================================
+    const ok = await bcrypt.compare(password, user.password_hash);
+    if (!ok) return res.status(401).json({ error: "Username atau password salah" });
 
-// GET me
-app.get('/api/me', requireLogin, (req, res) => {
-  const user = getUserById(req.session.userId)
-  if (!user) return res.status(404).json({ error: 'User not found' })
-
-  // Auto-expire plan
-  if (user.plan === 'pro' && user.planExpiry && new Date(user.planExpiry) < new Date()) {
-    saveUser(user.username, { plan: 'free', planExpiry: null })
-    user.plan = 'free'
+    checkResetMonthly(user.id);
+    req.session.userId = user.id;
+    log(`User login: ${username}`);
+    res.json({ success: true, redirect: "/dashboard" });
+  } catch (e) {
+    log(e.message, "error");
+    res.status(500).json({ error: "Server error" });
   }
+});
 
-  res.json({
-    username:         user.username,
-    email:            user.email,
-    plan:             user.plan || 'free',
-    planExpiry:       user.planExpiry,
-    robloxConnected:  !!user.robloxUserId,
-    robloxUserId:     user.robloxUserId,
-    totalConversions: user.totalConversions || 0,
-    remainingToday:   getRemainingToday(user),
-    conversions:      (user.conversions || []).slice(0, 20),
-    role:             user.role,
-  })
-})
-
-// Save Roblox account
-app.post('/api/roblox', requireLogin, (req, res) => {
-  const { userId, apiKey, groupId } = req.body
-  if (!userId) return res.json({ success: false, error: 'User ID wajib diisi' })
-
-  const user = getUserById(req.session.userId)
-  const updates = { robloxUserId: userId }
-  if (groupId) updates.robloxGroupId = groupId
-  if (apiKey && apiKey.trim()) updates.robloxApiKeyEnc = encrypt(apiKey.trim())
-
-  saveUser(user.username, updates)
-  res.json({ success: true })
-})
-
-// Convert audio (mock — implementasi FFmpeg di sini nanti)
-app.post('/api/convert', requireLogin, (req, res) => {
-  const user = getUserById(req.session.userId)
-  if (!user.robloxUserId)
-    return res.json({ success: false, error: 'Hubungkan akun Roblox dulu di halaman Akun' })
-
-  const remaining = getRemainingToday(user)
-  if (remaining <= 0)
-    return res.json({ success: false, error: 'Limit harian habis. Upgrade ke Pro untuk unlimited.' })
-
-  const { url, speed = 2.0, amplify = -4, duration = 350 } = req.body
-
-  // Update daily counter
-  const today = getTodayKey()
-  const dailyUsed = (user.dailyReset === today ? (user.dailyUsed || 0) : 0) + 1
-
-  // Mock asset ID — ganti dengan FFmpeg + Roblox API upload nanti
-  const assetId = Math.floor(Math.random() * 900000000000000) + 100000000000000
-
-  const conv = {
-    id:        Date.now().toString(),
-    name:      url ? url.replace(/^https?:\/\//,'').substring(0, 50) : 'File Upload',
-    assetId,
-    speed:     parseFloat(speed),
-    amplify:   parseInt(amplify),
-    status:    'pending',
-    createdAt: new Date().toISOString(),
+// Admin login
+app.post("/api/admin/login", (req, res) => {
+  const { username, password } = req.body;
+  if (username === process.env.ADMIN_USERNAME && password === process.env.ADMIN_PASSWORD) {
+    req.session.isAdmin = true;
+    return res.json({ success: true });
   }
+  res.status(401).json({ error: "Kredensial admin salah" });
+});
 
-  const updatedUser = getUserById(req.session.userId)
-  const conversions = [conv, ...(updatedUser.conversions || [])].slice(0, 100)
+// Logout
+app.post("/api/auth/logout", (req, res) => {
+  req.session.destroy();
+  res.json({ success: true });
+});
 
-  saveUser(user.username, {
-    dailyUsed,
-    dailyReset:       today,
-    totalConversions: (updatedUser.totalConversions || 0) + 1,
-    conversions,
-  })
-
-  res.json({ success: true, conversion: conv })
-})
+// Me - no requireAuth here, check manually
+app.get("/api/me", (req, res) => {
+  if (!req.session.userId) return res.json({ authenticated: false });
+  try {
+    const user = checkResetMonthly(req.session.userId);
+    if (!user) { req.session.destroy(); return res.json({ authenticated: false }); }
+    res.json({ authenticated: true, ...userSafeData(user) });
+  } catch(e) {
+    res.json({ authenticated: false });
+  }
+});
 
 // ============================================================
-// ADMIN API
+// ROBLOX SETTINGS
+// ============================================================
+app.post("/api/settings/roblox", requireAuth, (req, res) => {
+  const { creator_type, roblox_user_id, roblox_api_key, roblox_group_id, roblox_group_api_key } = req.body;
+  if (!["user", "group"].includes(creator_type)) return res.status(400).json({ error: "creator_type tidak valid" });
+
+  if (creator_type === "user") {
+    if (!roblox_user_id) return res.status(400).json({ error: "Roblox User ID wajib diisi" });
+    db.prepare("UPDATE users SET creator_type='user', roblox_user_id=?, roblox_api_key=?, roblox_group_id=NULL, roblox_group_api_key=NULL WHERE id=?")
+      .run(roblox_user_id, roblox_api_key || null, req.session.userId);
+  } else {
+    if (!roblox_group_id || !roblox_user_id) return res.status(400).json({ error: "Group ID dan User ID wajib diisi" });
+    db.prepare("UPDATE users SET creator_type='group', roblox_user_id=?, roblox_group_id=?, roblox_group_api_key=?, roblox_api_key=NULL WHERE id=?")
+      .run(roblox_user_id, roblox_group_id, roblox_group_api_key || null, req.session.userId);
+  }
+  res.json({ success: true, message: "Roblox account berhasil dihubungkan!" });
+});
+
+// ============================================================
+// INVITE CODE ROUTES (user)
+// ============================================================
+app.post("/api/invite/redeem", requireAuth, (req, res) => {
+  const { code } = req.body;
+  if (!code) return res.status(400).json({ error: "Kode invite wajib diisi" });
+
+  const invite = db.prepare("SELECT * FROM invite_codes WHERE code = ? AND is_active = 1").get(code.trim().toUpperCase());
+  if (!invite) return res.status(400).json({ error: "Kode tidak valid atau sudah tidak aktif" });
+  if (invite.max_uses > 0 && invite.uses >= invite.max_uses) return res.status(400).json({ error: "Kode sudah mencapai batas penggunaan" });
+  if (invite.expires_at && new Date(invite.expires_at) < new Date()) return res.status(400).json({ error: "Kode sudah expired" });
+
+  db.prepare("UPDATE invite_codes SET uses = uses + 1 WHERE id = ?").run(invite.id);
+  if (invite.max_uses > 0 && invite.uses + 1 >= invite.max_uses) {
+    db.prepare("UPDATE invite_codes SET is_active = 0 WHERE id = ?").run(invite.id);
+  }
+  db.prepare("UPDATE users SET tier = ? WHERE id = ?").run(invite.tier, req.session.userId);
+
+  log(`User ${req.session.userId} redeemed code ${code} → tier: ${invite.tier}`);
+  res.json({ success: true, message: `Tier berhasil diupgrade ke ${TIERS[invite.tier].label}!`, tier: invite.tier });
+});
+
+// ============================================================
+// ADMIN ROUTES
 // ============================================================
 
 // Get all users
-app.get('/api/admin/users', requireAdmin, (req, res) => {
-  const users = getAllUsers().map(u => ({
-    id:               u.id,
-    username:         u.username,
-    email:            u.email,
-    plan:             u.plan || 'free',
-    planExpiry:       u.planExpiry,
-    robloxConnected:  !!u.robloxUserId,
-    robloxUserId:     u.robloxUserId,
-    totalConversions: u.totalConversions || 0,
-    role:             u.role,
-    createdAt:        u.createdAt,
-    active:           isPlanActive(u),
-  }))
-  res.json({ users })
-})
+app.get("/api/admin/users", requireAdmin, (req, res) => {
+  const users = db.prepare("SELECT * FROM users ORDER BY created_at DESC").all();
+  res.json(users.map(u => ({ ...userSafeData(u), email: u.email })));
+});
 
-// Set plan user
-app.post('/api/admin/set-plan', requireAdmin, (req, res) => {
-  const { username, plan, days } = req.body
-  if (!username || !plan) return res.json({ success: false, error: 'username dan plan wajib diisi' })
+// Update user tier
+app.patch("/api/admin/users/:id/tier", requireAdmin, (req, res) => {
+  const { tier } = req.body;
+  if (!TIERS[tier]) return res.status(400).json({ error: "Tier tidak valid" });
+  db.prepare("UPDATE users SET tier = ? WHERE id = ?").run(tier, req.params.id);
+  res.json({ success: true });
+});
 
-  const user = getUser(username)
-  if (!user) return res.json({ success: false, error: 'User tidak ditemukan' })
-
-  let planExpiry = null
-  if (plan === 'pro') {
-    const exp = new Date()
-    exp.setDate(exp.getDate() + (parseInt(days) || 30))
-    planExpiry = exp.toISOString()
-  }
-
-  saveUser(username, { plan, planExpiry })
-  res.json({ success: true, plan, planExpiry })
-})
-
-// Set role (jadikan admin)
-app.post('/api/admin/set-role', requireAdmin, (req, res) => {
-  const { username, role } = req.body
-  if (!username || !role) return res.json({ success: false, error: 'username dan role wajib diisi' })
-
-  const user = getUser(username)
-  if (!user) return res.json({ success: false, error: 'User tidak ditemukan' })
-
-  saveUser(username, { role })
-  res.json({ success: true })
-})
-
-// Reset password user
-app.post('/api/admin/reset-password', requireAdmin, async (req, res) => {
-  const { username, newPassword } = req.body
-  if (!username || !newPassword) return res.json({ success: false, error: 'Semua field wajib diisi' })
-
-  const user = getUser(username)
-  if (!user) return res.json({ success: false, error: 'User tidak ditemukan' })
-
-  const hash = await bcrypt.hash(newPassword, 10)
-  saveUser(username, { passwordHash: hash })
-  res.json({ success: true })
-})
+// Toggle user active
+app.patch("/api/admin/users/:id/toggle", requireAdmin, (req, res) => {
+  const user = db.prepare("SELECT is_active FROM users WHERE id = ?").get(req.params.id);
+  if (!user) return res.status(404).json({ error: "User tidak ditemukan" });
+  db.prepare("UPDATE users SET is_active = ? WHERE id = ?").run(user.is_active ? 0 : 1, req.params.id);
+  res.json({ success: true, is_active: !user.is_active });
+});
 
 // Delete user
-app.delete('/api/admin/user/:username', requireAdmin, (req, res) => {
-  const db = loadDB()
-  const key = req.params.username.toLowerCase()
-  if (!db.users[key]) return res.json({ success: false, error: 'User tidak ditemukan' })
-  delete db.users[key]
-  saveDB(db)
-  res.json({ success: true })
-})
+app.delete("/api/admin/users/:id", requireAdmin, (req, res) => {
+  db.prepare("DELETE FROM users WHERE id = ?").run(req.params.id);
+  res.json({ success: true });
+});
+
+// Get all invite codes
+app.get("/api/admin/invites", requireAdmin, (req, res) => {
+  const codes = db.prepare("SELECT * FROM invite_codes ORDER BY created_at DESC").all();
+  res.json(codes);
+});
+
+// Create invite code
+app.post("/api/admin/invites", requireAdmin, (req, res) => {
+  const { tier, max_uses, expires_at, custom_code } = req.body;
+  if (!TIERS[tier]) return res.status(400).json({ error: "Tier tidak valid" });
+
+  const code = custom_code
+    ? custom_code.trim().toUpperCase()
+    : "XELLO-" + Math.random().toString(36).toUpperCase().slice(2, 8);
+
+  const exists = db.prepare("SELECT id FROM invite_codes WHERE code = ?").get(code);
+  if (exists) return res.status(400).json({ error: "Kode sudah ada" });
+
+  const id = uuidv4();
+  db.prepare(`
+    INSERT INTO invite_codes (id, code, tier, max_uses, expires_at)
+    VALUES (?, ?, ?, ?, ?)
+  `).run(id, code, tier, max_uses || 1, expires_at || null);
+
+  res.json({ success: true, code });
+});
+
+// Delete invite code
+app.delete("/api/admin/invites/:id", requireAdmin, (req, res) => {
+  db.prepare("DELETE FROM invite_codes WHERE id = ?").run(req.params.id);
+  res.json({ success: true });
+});
 
 // Admin stats
-app.get('/api/admin/stats', requireAdmin, (req, res) => {
-  const users = getAllUsers()
-  res.json({
-    totalUsers:    users.length,
-    proUsers:      users.filter(u => u.plan === 'pro' && isPlanActive(u)).length,
-    freeUsers:     users.filter(u => !u.plan || u.plan === 'free').length,
-    totalConversions: users.reduce((s, u) => s + (u.totalConversions || 0), 0),
-  })
-})
+app.get("/api/admin/stats", requireAdmin, (req, res) => {
+  const totalUsers = db.prepare("SELECT COUNT(*) as c FROM users").get().c;
+  const byTier = db.prepare("SELECT tier, COUNT(*) as c FROM users GROUP BY tier").all();
+  const totalUploads = db.prepare("SELECT SUM(total_uploads) as c FROM users").get().c || 0;
+  const recentUploads = db.prepare("SELECT * FROM upload_history ORDER BY created_at DESC LIMIT 20").all();
+  res.json({ totalUsers, byTier, totalUploads, recentUploads });
+});
+
+// Upload history for admin
+app.get("/api/admin/history", requireAdmin, (req, res) => {
+  const history = db.prepare(`
+    SELECT h.*, u.username FROM upload_history h
+    LEFT JOIN users u ON h.user_id = u.id
+    ORDER BY h.created_at DESC LIMIT 100
+  `).all();
+  res.json(history);
+});
 
 // ============================================================
-// SEED ADMIN (jalankan sekali)
-// POST /api/seed-admin  body: { secret: "...", username: "...", password: "..." }
+// AUDIO PROCESSING
 // ============================================================
-app.post('/api/seed-admin', async (req, res) => {
-  const { secret, username, password, email } = req.body
-  if (secret !== (process.env.ADMIN_SEED_SECRET || 'seed-libery-2024'))
-    return res.status(403).json({ error: 'Forbidden' })
+function processAudio(inputBuffer, filename, tempo = 1.0, pitch = 0) {
+  return new Promise((resolve, reject) => {
+    const tmpDir = os.tmpdir();
+    const ts = Date.now();
+    const inputPath = path.join(tmpDir, `rblx_in_${ts}.mp3`);
+    const outputPath = path.join(tmpDir, `rblx_out_${ts}.mp3`);
+    fs.writeFileSync(inputPath, inputBuffer);
+    const pitchRatio = Math.pow(2, pitch / 12);
+    const filterStr = `rubberband=tempo=${tempo}:pitch=${pitchRatio.toFixed(6)}`;
+    const args = ["-i", inputPath, "-af", filterStr, "-ar", "44100", "-ab", "192k", "-y", outputPath];
+    execFile("ffmpeg", args, { timeout: 120000 }, (err) => {
+      try { fs.unlinkSync(inputPath); } catch {}
+      if (err) { try { fs.unlinkSync(outputPath); } catch {}; return reject(err); }
+      try {
+        const buf = fs.readFileSync(outputPath);
+        fs.unlinkSync(outputPath);
+        resolve(buf);
+      } catch (e) { reject(e); }
+    });
+  });
+}
 
-  const existing = getUser(username)
-  if (existing) {
-    saveUser(username, { role: 'admin' })
-    return res.json({ success: true, message: 'Role updated to admin' })
+async function pollOperation(operationId, apiKey, maxAttempts = 20) {
+  for (let i = 0; i < maxAttempts; i++) {
+    await new Promise(r => setTimeout(r, 3000));
+    try {
+      const res = await axios.get(`https://apis.roblox.com/assets/v1/operations/${operationId}`, {
+        headers: { "x-api-key": apiKey }
+      });
+      if (res.data.done) {
+        if (res.data.error) return { success: false, error: res.data.error };
+        return { success: true, assetId: res.data.response?.assetId };
+      }
+    } catch (e) { log(`Poll ${i+1} error: ${e.message}`, "warn"); }
+  }
+  return { success: false, error: "Timeout polling" };
+}
+
+// ============================================================
+// UPLOAD ROUTE
+// ============================================================
+const upload = multer({ storage: multer.memoryStorage(), limits: { fileSize: 20 * 1024 * 1024 } });
+
+app.post("/api/upload", requireAuth, upload.array("files"), async (req, res) => {
+  const user = checkResetMonthly(req.session.userId);
+  if (!user.is_active) return res.status(403).json({ error: "Akun kamu dinonaktifkan." });
+
+  const apiKey = user.creator_type === "group" ? user.roblox_group_api_key : user.roblox_api_key;
+  if (!apiKey) return res.status(400).json({ error: "Belum ada API Key Roblox. Pergi ke Settings." });
+  if (!req.files?.length) return res.status(400).json({ error: "Tidak ada file." });
+
+  const tierInfo = TIERS[user.tier] || TIERS.trial;
+  const remaining = tierInfo.limit - user.uploads_this_month;
+  const filesToProcess = user.tier === "pro" ? req.files : req.files.slice(0, Math.max(0, remaining));
+
+  if (filesToProcess.length === 0) {
+    return res.status(429).json({ error: `Limit upload bulan ini habis (${tierInfo.limit}/${tierInfo.label}). Upgrade tier kamu!` });
   }
 
-  const hash = await bcrypt.hash(password, 10)
-  saveUser(username, {
-    id:           crypto.randomUUID(),
-    username:     username.toLowerCase(),
-    email:        (email || username + '@admin.local').toLowerCase(),
-    passwordHash: hash,
-    role:         'admin',
-    plan:         'pro',
-    planExpiry:   null,
-    createdAt:    new Date().toISOString(),
-    conversions:  [],
-    totalConversions: 0,
-  })
+  const processTempo = req.body.processTempo === "true";
+  const tempoMultiplier = parseFloat(req.body.tempoMultiplier) || 2.0;
+  const pitchShift = parseFloat(req.body.pitchShift) || 0;
+  const results = [];
 
-  res.json({ success: true, message: 'Admin created' })
-})
+  for (const file of filesToProcess) {
+    log(`Upload: ${file.originalname} by ${user.username}`);
+    let fileBuffer = file.buffer;
+    const needsProcess = processTempo || pitchShift !== 0;
+
+    if (needsProcess) {
+      try {
+        fileBuffer = await processAudio(file.buffer, file.originalname, processTempo ? tempoMultiplier : 1.0, pitchShift);
+      } catch (e) {
+        log(`FFmpeg error: ${e.message}`, "warn");
+        // fallback original
+      }
+    }
+
+    const histId = uuidv4();
+    const histEntry = {
+      id: histId, user_id: user.id, filename: file.originalname,
+      file_size: file.size, status: "FAILED", asset_id: null,
+      tempo_multiplier: processTempo ? tempoMultiplier : 1,
+      pitch_shift: pitchShift, error_msg: null
+    };
+
+    let success = false;
+    for (let attempt = 1; attempt <= 3 && !success; attempt++) {
+      try {
+        const displayName = path.basename(file.originalname, path.extname(file.originalname));
+        const creatorField = user.creator_type === "group"
+          ? { groupId: parseInt(user.roblox_group_id) }
+          : { userId: parseInt(user.roblox_user_id) };
+
+        const metadata = {
+          assetType: "Audio", displayName,
+          description: "Uploaded via XELLO Studio",
+          creationContext: { creator: creatorField }
+        };
+        const form = new FormData();
+        form.append("request", JSON.stringify(metadata));
+        form.append("fileContent", fileBuffer, { filename: file.originalname, contentType: "audio/mpeg" });
+
+        const response = await axios.post("https://apis.roblox.com/assets/v1/assets", form, {
+          headers: { "x-api-key": apiKey, ...form.getHeaders() },
+          maxBodyLength: Infinity, maxContentLength: Infinity
+        });
+
+        let { assetId, operationId } = response.data;
+        if (operationId && !assetId) {
+          const poll = await pollOperation(operationId, apiKey);
+          if (poll.success) assetId = poll.assetId;
+          else throw new Error(JSON.stringify(poll.error));
+        }
+
+        histEntry.status = "SUCCESS";
+        histEntry.asset_id = assetId;
+        histEntry.operation_id = operationId;
+        db.prepare("UPDATE users SET uploads_this_month = uploads_this_month + 1, total_uploads = total_uploads + 1 WHERE id = ?")
+          .run(user.id);
+        success = true;
+        log(`Success: ${file.originalname} → ${assetId}`, "success");
+      } catch (e) {
+        histEntry.error_msg = e.response?.data ? JSON.stringify(e.response.data) : e.message;
+        log(`Attempt ${attempt} failed: ${histEntry.error_msg}`, "error");
+        if (e.response?.status === 429) await new Promise(r => setTimeout(r, 10000));
+        else if (attempt < 3) await new Promise(r => setTimeout(r, 2000));
+      }
+    }
+
+    db.prepare(`
+      INSERT INTO upload_history (id, user_id, filename, asset_id, operation_id, status, error_msg, tempo_multiplier, pitch_shift, file_size)
+      VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
+    `).run(histEntry.id, histEntry.user_id, histEntry.filename, histEntry.asset_id, histEntry.operation_id || null,
+      histEntry.status, histEntry.error_msg, histEntry.tempo_multiplier, histEntry.pitch_shift, histEntry.file_size);
+
+    results.push({ ...histEntry, file: file.originalname });
+    await new Promise(r => setTimeout(r, 1000));
+  }
+
+  const sukses = results.filter(r => r.status === "SUCCESS").length;
+  res.json({ total: filesToProcess.length, success: sukses, results });
+});
+
+// ============================================================
+// HISTORY ROUTE
+// ============================================================
+app.get("/api/history", requireAuth, (req, res) => {
+  const history = db.prepare(
+    "SELECT * FROM upload_history WHERE user_id = ? ORDER BY created_at DESC LIMIT 100"
+  ).all(req.session.userId);
+  res.json(history);
+});
+
+app.delete("/api/history/:id", requireAuth, (req, res) => {
+  db.prepare("DELETE FROM upload_history WHERE id = ? AND user_id = ?").run(req.params.id, req.session.userId);
+  res.json({ success: true });
+});
+
+// Health check
+app.get("/ping", (req, res) => res.json({ status: "ok", time: new Date().toISOString(), port: PORT }));
+
+// Page ROUTES
+app.get("/", (req, res) => res.sendFile(path.join(__dirname, "public", "index.html")));
+app.get("/dashboard", (req, res) => {
+  res.sendFile(path.join(__dirname, "public", "dashboard.html"));
+});
+app.get("/admin", (req, res) => res.sendFile(path.join(__dirname, "public", "admin.html")));
 
 // ============================================================
 // START
 // ============================================================
-const PORT = process.env.PORT || 3000
-app.listen(PORT, () => {
-  console.log(`
-╔════════════════════════════════╗
-║  LiberyAudio - Simple          ║
-║  http://localhost:${PORT}          ║
-║                                ║
-║  Buat admin pertama:           ║
-║  POST /api/seed-admin          ║
-║  { secret, username,           ║
-║    password, email }           ║
-╚════════════════════════════════╝`)
-})
+app.listen(PORT, "0.0.0.0", () => {
+  log(`🚀 XELLO SaaS running on port ${PORT}`);
+  log(`Tiers: Trial=${TIERS.trial.limit} | Beginner=${TIERS.beginner.limit} | Pro=Unlimited`);
+});
