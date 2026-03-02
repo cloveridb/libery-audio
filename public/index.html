@@ -1,0 +1,113 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width,initial-scale=1.0">
+<title>LiberyAudio — Convert & Upload Audio ke Roblox</title>
+<link rel="stylesheet" href="/css/style.css">
+<style>
+body{min-height:100vh;overflow-x:hidden}
+nav{position:fixed;top:0;left:0;right:0;z-index:100;padding:14px 40px;display:flex;align-items:center;justify-content:space-between;background:rgba(8,12,16,0.85);backdrop-filter:blur(12px);border-bottom:1px solid var(--border)}
+.logo{font-size:18px;font-weight:800}.logo span{color:var(--accent)}
+.nav-right{display:flex;gap:10px}
+.hero{min-height:100vh;display:flex;align-items:center;justify-content:center;text-align:center;padding:100px 20px 60px;position:relative;overflow:hidden}
+.hero-bg{position:absolute;inset:0;background:radial-gradient(ellipse 80% 50% at 50% -10%,rgba(0,229,255,0.07),transparent),radial-gradient(ellipse 50% 60% at 80% 50%,rgba(124,58,237,0.05),transparent)}
+.hero-grid{position:absolute;inset:0;background-image:linear-gradient(rgba(0,229,255,0.03) 1px,transparent 1px),linear-gradient(90deg,rgba(0,229,255,0.03) 1px,transparent 1px);background-size:60px 60px;mask-image:radial-gradient(ellipse 80% 80% at 50% 50%,black,transparent)}
+.hero-content{position:relative;z-index:1;max-width:780px}
+.badge-tag{display:inline-flex;align-items:center;gap:8px;background:rgba(0,229,255,0.07);border:1px solid rgba(0,229,255,0.2);border-radius:100px;padding:5px 16px;font-size:11px;font-weight:700;color:var(--accent);letter-spacing:1px;margin-bottom:28px}
+.badge-dot{width:6px;height:6px;background:var(--accent);border-radius:50%;animation:blink 2s infinite}
+@keyframes blink{0%,100%{opacity:1}50%{opacity:.4}}
+h1{font-size:clamp(38px,7vw,76px);font-weight:800;line-height:1.05;letter-spacing:-2px;margin-bottom:20px}
+h1 span{color:var(--accent)}
+.hero-desc{font-size:17px;color:var(--muted);max-width:500px;margin:0 auto 40px;line-height:1.7}
+.hero-btns{display:flex;gap:14px;justify-content:center;flex-wrap:wrap}
+.btn-hero{padding:13px 30px;font-size:15px}
+
+.stats{display:grid;grid-template-columns:repeat(3,1fr);gap:16px;max-width:700px;margin:0 auto 80px;padding:0 20px}
+.stat-c{background:var(--card);border:1px solid var(--border);border-radius:12px;padding:22px;text-align:center}
+.stat-n{font-size:36px;font-weight:800;font-family:'Space Mono',monospace;letter-spacing:-2px;color:var(--accent)}
+.stat-l{font-size:12px;color:var(--muted);margin-top:4px;font-weight:700;letter-spacing:.5px}
+
+section{padding:70px 20px;max-width:1060px;margin:0 auto}
+.sec-tag{font-size:11px;font-weight:700;color:var(--accent);letter-spacing:2px;margin-bottom:14px}
+.sec-title{font-size:clamp(26px,4vw,40px);font-weight:800;letter-spacing:-1px;margin-bottom:12px}
+.sec-sub{color:var(--muted);font-size:15px;line-height:1.7;max-width:480px}
+.features{display:grid;grid-template-columns:repeat(auto-fit,minmax(280px,1fr));gap:16px;margin-top:44px}
+.fc{background:var(--card);border:1px solid var(--border);border-radius:14px;padding:28px;transition:all .3s;position:relative;overflow:hidden}
+.fc:hover{border-color:rgba(0,229,255,0.25);transform:translateY(-3px)}
+.fc:hover::after{content:'';position:absolute;top:0;left:0;right:0;height:2px;background:linear-gradient(90deg,transparent,var(--accent),transparent)}
+.fi{font-size:24px;margin-bottom:16px}
+.ft{font-size:16px;font-weight:700;margin-bottom:8px}
+.fd{color:var(--muted);font-size:13px;line-height:1.6}
+
+.cta-wrap{padding:70px 20px;text-align:center;position:relative;overflow:hidden}
+.cta-bg{position:absolute;inset:0;background:radial-gradient(ellipse 50% 60% at 50% 50%,rgba(0,229,255,0.04),transparent)}
+.cta-inner{position:relative;z-index:1;max-width:580px;margin:0 auto}
+
+footer{border-top:1px solid var(--border);padding:32px;text-align:center;color:var(--muted);font-size:13px}
+footer strong{color:var(--text)}
+
+@media(max-width:640px){nav{padding:12px 16px}.nav-right a:first-child{display:none}.stats{grid-template-columns:1fr;max-width:300px}}
+</style>
+</head>
+<body>
+
+<nav>
+  <div class="logo">Libery<span>Audio</span></div>
+  <div class="nav-right">
+    <a href="/login" class="btn btn-outline" style="padding:8px 18px;font-size:13px">Masuk</a>
+    <a href="/register" class="btn btn-primary" style="padding:8px 18px;font-size:13px">Daftar Gratis</a>
+  </div>
+</nav>
+
+<div class="hero">
+  <div class="hero-bg"></div>
+  <div class="hero-grid"></div>
+  <div class="hero-content">
+    <div class="badge-tag"><div class="badge-dot"></div>AUDIO CONVERTER FOR ROBLOX</div>
+    <h1>Convert & Upload<br><span>Audio ke Roblox</span></h1>
+    <p class="hero-desc">Upload lagu dari YouTube, SoundCloud, atau file MP3 langsung ke akun Roblox kamu. Kontrol tempo, amplifikasi, dan durasi.</p>
+    <div class="hero-btns">
+      <a href="/register" class="btn btn-primary btn-hero">⚡ Mulai Gratis</a>
+      <a href="/login" class="btn btn-outline btn-hero">Sudah punya akun →</a>
+    </div>
+  </div>
+</div>
+
+<div class="stats">
+  <div class="stat-c"><div class="stat-n">2x</div><div class="stat-l">TEMPO KONVERSI</div></div>
+  <div class="stat-c"><div class="stat-n">&lt;30s</div><div class="stat-l">PROSES UPLOAD</div></div>
+  <div class="stat-c"><div class="stat-n">100%</div><div class="stat-l">OTOMATIS</div></div>
+</div>
+
+<section>
+  <div class="sec-tag">// FITUR</div>
+  <div class="sec-title">Semua yang kamu butuhkan</div>
+  <p class="sec-sub">Satu platform untuk convert dan upload audio Roblox dengan kontrol penuh.</p>
+  <div class="features">
+    <div class="fc"><div class="fi">⚡</div><div class="ft">Konversi Otomatis</div><div class="fd">Download dari YouTube/SoundCloud, convert tempo, upload ke Roblox Creator dalam satu klik.</div></div>
+    <div class="fc"><div class="fi">🎛️</div><div class="ft">Kontrol Audio Penuh</div><div class="fd">Atur kecepatan (1x–3x), amplifikasi dB, dan durasi maksimum per lagu.</div></div>
+    <div class="fc"><div class="fi">📋</div><div class="ft">Riwayat & Asset ID</div><div class="fd">Semua upload tersimpan lengkap dengan Asset ID. Copy langsung ke MusicModule.</div></div>
+    <div class="fc"><div class="fi">👥</div><div class="ft">Personal & Group</div><div class="fd">Upload ke akun personal atau group Roblox. Cocok untuk multi-game developer.</div></div>
+    <div class="fc"><div class="fi">🔐</div><div class="ft">API Key Aman</div><div class="fd">API Key terenkripsi AES-256 dan tidak pernah dibagikan ke pihak manapun.</div></div>
+    <div class="fc"><div class="fi">👑</div><div class="ft">Upgrade Plan</div><div class="fd">Free 3x/hari. Upgrade ke Pro untuk konversi unlimited tanpa batas.</div></div>
+  </div>
+</section>
+
+<div class="cta-wrap">
+  <div class="cta-bg"></div>
+  <div class="cta-inner">
+    <div class="sec-tag">// MULAI SEKARANG</div>
+    <div class="sec-title" style="max-width:100%">Siap upload musik ke Roblox?</div>
+    <p class="sec-sub" style="margin:14px auto 36px">Daftar gratis, tidak perlu kartu kredit. Langsung bisa pakai.</p>
+    <a href="/register" class="btn btn-primary" style="padding:14px 36px;font-size:16px">Daftar Gratis Sekarang →</a>
+  </div>
+</div>
+
+<footer>
+  <strong>LiberyAudio</strong> &mdash; Convert & Upload Audio ke Roblox<br>
+  <span style="margin-top:8px;display:block">Dibuat untuk komunitas Roblox Indonesia 🇮🇩</span>
+</footer>
+
+</body>
+</html>
