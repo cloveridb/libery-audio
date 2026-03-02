@@ -1,0 +1,404 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+<meta charset="UTF-8"/>
+<meta name="viewport" content="width=device-width,initial-scale=1.0"/>
+<title>XELLO Studio – Roblox Audio Uploader</title>
+<link href="https://fonts.googleapis.com/css2?family=Orbitron:wght@400;700;900&family=Space+Mono:wght@400;700&family=Inter:wght@300;400;500;600&display=swap" rel="stylesheet"/>
+<style>
+:root{
+  --c:#00e5ff;--c2:#7b2fff;--c3:#ff2d6b;
+  --bg:#04080f;--bg2:#080f1c;--bg3:#0c1525;
+  --glass:rgba(0,229,255,0.06);
+  --border:rgba(0,229,255,0.15);
+  --glow:0 0 40px rgba(0,229,255,0.25);
+}
+*{box-sizing:border-box;margin:0;padding:0}
+html{scroll-behavior:smooth}
+body{font-family:'Inter',sans-serif;background:var(--bg);color:#c8dff0;overflow-x:hidden}
+
+/* NOISE OVERLAY */
+body::before{content:'';position:fixed;inset:0;opacity:.03;background-image:url("data:image/svg+xml,%3Csvg viewBox='0 0 256 256' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='noise'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.9' numOctaves='4' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23noise)'/%3E%3C/svg%3E");pointer-events:none;z-index:9999}
+
+/* NAV */
+nav{display:flex;align-items:center;justify-content:space-between;padding:16px 40px;position:fixed;top:0;left:0;right:0;z-index:100;background:rgba(4,8,15,0.85);backdrop-filter:blur(20px);border-bottom:1px solid rgba(0,229,255,0.07)}
+.nav-logo{font-family:'Orbitron',sans-serif;font-size:18px;font-weight:900;color:var(--c);letter-spacing:4px;text-shadow:0 0 20px var(--c)}
+.nav-logo span{color:var(--c2)}
+.nav-links{display:flex;gap:28px;align-items:center}
+.nav-links a{color:rgba(200,223,240,0.6);text-decoration:none;font-size:13px;letter-spacing:1px;transition:color .2s}
+.nav-links a:hover{color:var(--c)}
+.nav-btn{padding:8px 20px;background:transparent;border:1px solid var(--c);border-radius:6px;color:var(--c);font-size:12px;font-family:'Orbitron',sans-serif;letter-spacing:2px;cursor:pointer;transition:all .3s}
+.nav-btn:hover{background:rgba(0,229,255,0.1);box-shadow:var(--glow)}
+.nav-btn.solid{background:var(--c);color:#04080f;font-weight:700}
+.nav-btn.solid:hover{box-shadow:0 0 30px rgba(0,229,255,0.5)}
+
+/* HERO */
+.hero{min-height:100vh;display:flex;flex-direction:column;align-items:center;justify-content:center;padding:100px 20px 60px;text-align:center;position:relative}
+.hero-grid{position:absolute;inset:0;background-image:linear-gradient(rgba(0,229,255,0.03) 1px,transparent 1px),linear-gradient(90deg,rgba(0,229,255,0.03) 1px,transparent 1px);background-size:60px 60px}
+.hero-glow{position:absolute;top:20%;left:50%;transform:translateX(-50%);width:600px;height:600px;background:radial-gradient(ellipse,rgba(123,47,255,0.15) 0%,transparent 70%);pointer-events:none}
+.badge{display:inline-flex;align-items:center;gap:8px;padding:6px 16px;border:1px solid rgba(0,229,255,0.3);border-radius:20px;font-size:11px;letter-spacing:2px;color:var(--c);margin-bottom:24px;background:rgba(0,229,255,0.05);position:relative;z-index:1}
+.badge-dot{width:6px;height:6px;border-radius:50%;background:var(--c);box-shadow:0 0 8px var(--c);animation:pulse2 2s infinite}
+@keyframes pulse2{0%,100%{opacity:1}50%{opacity:.3}}
+h1{font-family:'Orbitron',sans-serif;font-size:clamp(32px,6vw,72px);font-weight:900;line-height:1.1;letter-spacing:-1px;position:relative;z-index:1;margin-bottom:20px}
+h1 .grad{background:linear-gradient(135deg,var(--c),var(--c2));-webkit-background-clip:text;-webkit-text-fill-color:transparent}
+.hero-sub{font-size:16px;color:rgba(200,223,240,0.55);max-width:520px;line-height:1.7;position:relative;z-index:1;margin-bottom:40px}
+.hero-cta{display:flex;gap:14px;justify-content:center;flex-wrap:wrap;position:relative;z-index:1}
+.btn-primary{padding:14px 32px;background:linear-gradient(135deg,var(--c),var(--c2));color:#04080f;font-family:'Orbitron',sans-serif;font-size:12px;font-weight:700;letter-spacing:2px;border:none;border-radius:8px;cursor:pointer;transition:all .3s;text-decoration:none;display:inline-flex;align-items:center;gap:8px}
+.btn-primary:hover{transform:translateY(-2px);box-shadow:0 0 40px rgba(0,229,255,0.4)}
+.btn-secondary{padding:14px 32px;background:transparent;border:1px solid rgba(200,223,240,0.2);color:rgba(200,223,240,0.8);font-family:'Orbitron',sans-serif;font-size:12px;letter-spacing:2px;border-radius:8px;cursor:pointer;transition:all .3s;text-decoration:none;display:inline-flex;align-items:center;gap:8px}
+.btn-secondary:hover{border-color:var(--c);color:var(--c)}
+
+/* STATS STRIP */
+.stats-strip{display:flex;justify-content:center;gap:0;flex-wrap:wrap;border-top:1px solid var(--border);border-bottom:1px solid var(--border);background:var(--bg2)}
+.stat-item{padding:24px 48px;text-align:center;border-right:1px solid var(--border)}
+.stat-item:last-child{border-right:none}
+.stat-num{font-family:'Orbitron',sans-serif;font-size:28px;font-weight:900;color:var(--c);text-shadow:0 0 20px rgba(0,229,255,0.4)}
+.stat-lbl{font-size:11px;color:rgba(200,223,240,0.35);letter-spacing:2px;margin-top:4px;text-transform:uppercase}
+
+/* FEATURES */
+.section{padding:80px 40px;max-width:1100px;margin:0 auto}
+.sec-tag{font-size:10px;letter-spacing:4px;color:var(--c);text-transform:uppercase;margin-bottom:12px;font-family:'Space Mono',monospace}
+.sec-title{font-family:'Orbitron',sans-serif;font-size:clamp(22px,4vw,38px);font-weight:900;margin-bottom:16px;line-height:1.2}
+.sec-sub{color:rgba(200,223,240,0.5);font-size:15px;line-height:1.7;max-width:520px;margin-bottom:48px}
+.features-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(300px,1fr));gap:20px}
+.feat-card{background:var(--glass);border:1px solid var(--border);border-radius:16px;padding:28px;position:relative;overflow:hidden;transition:all .3s}
+.feat-card::before{content:'';position:absolute;top:0;left:0;right:0;height:1px;background:linear-gradient(90deg,transparent,var(--c),transparent);opacity:0;transition:opacity .3s}
+.feat-card:hover{border-color:rgba(0,229,255,0.3);transform:translateY(-3px);box-shadow:0 16px 40px rgba(0,0,0,0.4)}
+.feat-card:hover::before{opacity:1}
+.feat-icon{font-size:32px;margin-bottom:16px;display:block}
+.feat-title{font-family:'Orbitron',sans-serif;font-size:13px;font-weight:700;color:var(--c);letter-spacing:2px;margin-bottom:10px}
+.feat-desc{font-size:13px;color:rgba(200,223,240,0.5);line-height:1.7}
+
+/* PRICING */
+.pricing-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(260px,1fr));gap:20px;margin-top:40px}
+.price-card{background:var(--glass);border:1px solid var(--border);border-radius:20px;padding:32px;position:relative;overflow:hidden;transition:all .3s}
+.price-card.featured{border-color:rgba(0,229,255,0.4);background:rgba(0,229,255,0.05)}
+.price-card.featured::after{content:'POPULER';position:absolute;top:16px;right:16px;background:var(--c);color:#04080f;font-size:9px;font-family:'Orbitron',sans-serif;font-weight:700;padding:4px 10px;border-radius:20px;letter-spacing:1px}
+.price-tier{font-size:10px;letter-spacing:4px;color:rgba(200,223,240,0.4);text-transform:uppercase;font-family:'Space Mono',monospace;margin-bottom:8px}
+.price-name{font-family:'Orbitron',sans-serif;font-size:22px;font-weight:900;color:#fff;margin-bottom:4px}
+.price-tag{font-size:13px;color:var(--c);margin-bottom:20px;font-family:'Space Mono',monospace}
+.price-limit{font-size:36px;font-family:'Orbitron',sans-serif;font-weight:900;margin-bottom:4px}
+.price-limit.cyan{color:var(--c)}
+.price-limit.blue{color:#4fc3f7}
+.price-limit.purple{color:var(--c2)}
+.price-sublabel{font-size:11px;color:rgba(200,223,240,0.35);letter-spacing:1px;margin-bottom:24px}
+.price-features{list-style:none;margin-bottom:28px}
+.price-features li{font-size:12px;color:rgba(200,223,240,0.6);padding:7px 0;border-bottom:1px solid rgba(255,255,255,0.04);display:flex;align-items:center;gap:8px}
+.price-features li::before{content:'✓';color:var(--c);font-weight:bold;font-size:14px;flex-shrink:0}
+.price-features li.no::before{content:'✗';color:rgba(200,223,240,0.2)}
+.price-features li.no{color:rgba(200,223,240,0.25)}
+.price-cta{width:100%;padding:12px;background:transparent;border:1px solid var(--border);border-radius:8px;color:rgba(200,223,240,0.7);font-family:'Orbitron',sans-serif;font-size:11px;letter-spacing:2px;cursor:pointer;transition:all .3s;text-align:center;text-decoration:none;display:block}
+.price-cta:hover{border-color:var(--c);color:var(--c)}
+.price-card.featured .price-cta{background:var(--c);color:#04080f;border-color:var(--c);font-weight:700}
+.price-card.featured .price-cta:hover{box-shadow:var(--glow)}
+
+/* HOW IT WORKS */
+.steps{display:grid;grid-template-columns:repeat(auto-fit,minmax(220px,1fr));gap:16px;margin-top:40px;position:relative}
+.step{background:var(--glass);border:1px solid var(--border);border-radius:14px;padding:24px;position:relative}
+.step-num{font-family:'Orbitron',sans-serif;font-size:36px;font-weight:900;color:rgba(0,229,255,0.1);position:absolute;top:16px;right:20px;line-height:1}
+.step-icon{font-size:24px;margin-bottom:14px}
+.step-title{font-family:'Orbitron',sans-serif;font-size:12px;font-weight:700;color:#fff;letter-spacing:1px;margin-bottom:8px}
+.step-desc{font-size:12px;color:rgba(200,223,240,0.45);line-height:1.6}
+
+/* MODAL */
+.modal-bg{display:none;position:fixed;inset:0;background:rgba(4,8,15,0.92);backdrop-filter:blur(12px);z-index:200;align-items:center;justify-content:center}
+.modal-bg.show{display:flex}
+.modal{background:var(--bg2);border:1px solid var(--border);border-radius:20px;padding:36px;width:100%;max-width:420px;position:relative;box-shadow:0 40px 80px rgba(0,0,0,0.6)}
+.modal-close{position:absolute;top:16px;right:20px;background:none;border:none;color:rgba(200,223,240,0.4);font-size:20px;cursor:pointer;transition:color .2s}
+.modal-close:hover{color:#fff}
+.modal h2{font-family:'Orbitron',sans-serif;font-size:16px;font-weight:900;color:var(--c);letter-spacing:3px;margin-bottom:6px}
+.modal-sub{font-size:12px;color:rgba(200,223,240,0.4);margin-bottom:28px;letter-spacing:.5px}
+.tab-row{display:flex;gap:0;margin-bottom:28px;background:rgba(255,255,255,0.04);border-radius:8px;padding:3px}
+.tab{flex:1;padding:9px;text-align:center;font-size:11px;font-family:'Orbitron',sans-serif;letter-spacing:1px;cursor:pointer;border-radius:6px;border:none;background:transparent;color:rgba(200,223,240,0.4);transition:all .2s}
+.tab.active{background:rgba(0,229,255,0.12);color:var(--c);border:1px solid rgba(0,229,255,0.2)}
+.form-group{margin-bottom:16px}
+.form-group label{display:block;font-size:10px;letter-spacing:2px;color:rgba(200,223,240,0.35);text-transform:uppercase;margin-bottom:7px;font-family:'Space Mono',monospace}
+.form-group input{width:100%;background:rgba(0,229,255,0.03);border:1px solid rgba(0,229,255,0.12);border-radius:8px;padding:11px 14px;color:#c8dff0;font-size:14px;outline:none;transition:all .3s;font-family:'Inter',sans-serif}
+.form-group input:focus{border-color:rgba(0,229,255,0.5);background:rgba(0,229,255,0.06);box-shadow:0 0 0 3px rgba(0,229,255,0.06)}
+.form-group input::placeholder{color:rgba(200,223,240,0.2)}
+.form-submit{width:100%;padding:13px;background:linear-gradient(135deg,var(--c),var(--c2));color:#04080f;font-family:'Orbitron',sans-serif;font-size:12px;font-weight:700;letter-spacing:2px;border:none;border-radius:8px;cursor:pointer;transition:all .3s;margin-top:4px}
+.form-submit:hover{transform:translateY(-1px);box-shadow:0 0 30px rgba(0,229,255,0.3)}
+.form-msg{font-size:12px;text-align:center;margin-top:12px;min-height:18px;border-radius:6px;padding:8px}
+.form-msg.error{color:#ff5c7b;background:rgba(255,45,107,0.08)}
+.form-msg.success{color:#00e5a0;background:rgba(0,229,160,0.08)}
+.divider{text-align:center;font-size:11px;color:rgba(200,223,240,0.2);margin:14px 0;letter-spacing:2px}
+.invite-hint{text-align:center;font-size:11px;color:rgba(200,223,240,0.3);margin-top:10px}
+.invite-hint a{color:var(--c);cursor:pointer;text-decoration:none}
+
+/* FOOTER */
+footer{border-top:1px solid var(--border);padding:32px 40px;display:flex;justify-content:space-between;align-items:center;flex-wrap:gap;gap:16px}
+.foot-logo{font-family:'Orbitron',sans-serif;font-size:14px;font-weight:900;color:var(--c);letter-spacing:3px}
+.foot-copy{font-size:11px;color:rgba(200,223,240,0.25);letter-spacing:1px}
+
+@media(max-width:600px){
+  nav{padding:14px 20px}
+  .nav-links{display:none}
+  .section{padding:60px 20px}
+  .stats-strip .stat-item{padding:20px 24px}
+  footer{flex-direction:column;text-align:center;padding:24px 20px}
+}
+</style>
+</head>
+<body>
+
+<!-- NAV -->
+<nav>
+  <div class="nav-logo">XELLO<span>.</span>STUDIO</div>
+  <div class="nav-links">
+    <a href="#features">Fitur</a>
+    <a href="#pricing">Harga</a>
+    <a href="#howto">Cara Pakai</a>
+    <button class="nav-btn" onclick="openModal('login')">LOGIN</button>
+    <button class="nav-btn solid" onclick="openModal('register')">DAFTAR</button>
+  </div>
+  <div style="display:flex;gap:10px" class="mobile-nav-btns">
+    <button class="nav-btn" onclick="openModal('login')" style="display:none" id="mLoginBtn">LOGIN</button>
+    <button class="nav-btn solid" onclick="openModal('register')" style="display:none" id="mRegBtn">DAFTAR</button>
+  </div>
+</nav>
+
+<!-- HERO -->
+<section class="hero">
+  <div class="hero-grid"></div>
+  <div class="hero-glow"></div>
+  <div class="badge"><span class="badge-dot"></span> Platform Audio Roblox #1</div>
+  <h1>Upload Audio Roblox<br><span class="grad">Lebih Cepat & Pintar</span></h1>
+  <p class="hero-sub">Bulk upload, konversi audio otomatis, dan bypass limit — semua dalam satu dashboard yang powerful untuk kreator Roblox.</p>
+  <div class="hero-cta">
+    <a href="#" class="btn-primary" onclick="openModal('register');return false">🚀 Mulai Gratis</a>
+    <a href="#features" class="btn-secondary">✦ Lihat Fitur</a>
+  </div>
+</section>
+
+<!-- STATS -->
+<div class="stats-strip">
+  <div class="stat-item"><div class="stat-num">10K+</div><div class="stat-lbl">Audio Diupload</div></div>
+  <div class="stat-item"><div class="stat-num">99.9%</div><div class="stat-lbl">Uptime</div></div>
+  <div class="stat-item"><div class="stat-num">3x</div><div class="stat-lbl">Lebih Cepat</div></div>
+  <div class="stat-item"><div class="stat-num">24/7</div><div class="stat-lbl">Online</div></div>
+</div>
+
+<!-- FEATURES -->
+<section class="section" id="features">
+  <div class="sec-tag">// Fitur Unggulan</div>
+  <h2 class="sec-title">Semua yang kamu butuhkan<br>untuk upload audio Roblox</h2>
+  <p class="sec-sub">Platform lengkap dengan fitur audio processing, bulk upload, dan manajemen aset Roblox.</p>
+  <div class="features-grid">
+    <div class="feat-card">
+      <span class="feat-icon">⚡</span>
+      <div class="feat-title">BULK UPLOAD</div>
+      <div class="feat-desc">Upload banyak file sekaligus. Antrian otomatis dengan retry system untuk memastikan semua file berhasil terupload.</div>
+    </div>
+    <div class="feat-card">
+      <span class="feat-icon">🎚️</span>
+      <div class="feat-title">AUDIO PROCESSOR</div>
+      <div class="feat-desc">Ubah tempo dan pitch secara real-time. Preview langsung di browser sebelum upload ke Roblox.</div>
+    </div>
+    <div class="feat-card">
+      <span class="feat-icon">🎧</span>
+      <div class="feat-title">AUDIO PREVIEW</div>
+      <div class="feat-desc">Dengarkan audio hasil proses langsung di dashboard dengan waveform visualizer interaktif.</div>
+    </div>
+    <div class="feat-card">
+      <span class="feat-icon">👥</span>
+      <div class="feat-title">GROUP & PERSONAL</div>
+      <div class="feat-desc">Support upload ke akun personal maupun Group Roblox. Kelola multiple akun dengan mudah.</div>
+    </div>
+    <div class="feat-card">
+      <span class="feat-icon">📊</span>
+      <div class="feat-title">HISTORY & LOG</div>
+      <div class="feat-desc">Riwayat upload lengkap dengan Asset ID, status, dan log error untuk setiap file yang diupload.</div>
+    </div>
+    <div class="feat-card">
+      <span class="feat-icon">🔑</span>
+      <div class="feat-title">INVITE SYSTEM</div>
+      <div class="feat-desc">Kode invite eksklusif untuk upgrade tier. Bagikan ke teman atau jual akses premium dengan mudah.</div>
+    </div>
+  </div>
+</section>
+
+<!-- PRICING -->
+<section class="section" id="pricing" style="padding-top:0">
+  <div class="sec-tag">// Paket & Harga</div>
+  <h2 class="sec-title">Pilih paket yang sesuai</h2>
+  <p class="sec-sub">Mulai gratis dengan 3 upload trial, upgrade kapan saja dengan kode invite.</p>
+  <div class="pricing-grid">
+    <div class="price-card">
+      <div class="price-tier">// TIER 01</div>
+      <div class="price-name">TRIAL</div>
+      <div class="price-tag">Gratis selamanya</div>
+      <div class="price-limit cyan">3</div>
+      <div class="price-sublabel">upload / bulan</div>
+      <ul class="price-features">
+        <li>Bulk upload (maks 3 file/bulan)</li>
+        <li>Audio preview</li>
+        <li>Personal & Group upload</li>
+        <li class="no">Audio processing (tempo/pitch)</li>
+        <li class="no">Priority support</li>
+      </ul>
+      <a href="#" class="price-cta" onclick="openModal('register');return false">DAFTAR GRATIS</a>
+    </div>
+    <div class="price-card featured">
+      <div class="price-tier">// TIER 02</div>
+      <div class="price-name">BEGINNER</div>
+      <div class="price-tag">Pakai kode invite</div>
+      <div class="price-limit blue">50</div>
+      <div class="price-sublabel">upload / bulan</div>
+      <ul class="price-features">
+        <li>Bulk upload (maks 50 file/bulan)</li>
+        <li>Audio preview + waveform</li>
+        <li>Personal & Group upload</li>
+        <li>Audio processing (tempo/pitch)</li>
+        <li class="no">Priority support</li>
+      </ul>
+      <a href="#" class="price-cta" onclick="openModal('register');return false">DAPATKAN AKSES</a>
+    </div>
+    <div class="price-card">
+      <div class="price-tier">// TIER 03</div>
+      <div class="price-name">PRO</div>
+      <div class="price-tag">Pakai kode invite</div>
+      <div class="price-limit purple">∞</div>
+      <div class="price-sublabel">upload unlimited</div>
+      <ul class="price-features">
+        <li>Upload UNLIMITED</li>
+        <li>Audio preview + waveform</li>
+        <li>Personal & Group upload</li>
+        <li>Audio processing (tempo/pitch)</li>
+        <li>Priority support</li>
+      </ul>
+      <a href="#" class="price-cta" onclick="openModal('register');return false">DAPATKAN AKSES</a>
+    </div>
+  </div>
+</section>
+
+<!-- HOW IT WORKS -->
+<section class="section" id="howto" style="padding-top:0">
+  <div class="sec-tag">// Cara Pakai</div>
+  <h2 class="sec-title">Mulai dalam 3 langkah</h2>
+  <div class="steps">
+    <div class="step">
+      <div class="step-num">01</div>
+      <div class="step-icon">📝</div>
+      <div class="step-title">DAFTAR AKUN</div>
+      <div class="step-desc">Buat akun gratis. Jika punya kode invite, masukkan saat registrasi untuk langsung naik tier.</div>
+    </div>
+    <div class="step">
+      <div class="step-num">02</div>
+      <div class="step-icon">🔗</div>
+      <div class="step-title">HUBUNGKAN ROBLOX</div>
+      <div class="step-desc">Masukkan Roblox API Key, User ID, atau Group ID di halaman Settings dashboard.</div>
+    </div>
+    <div class="step">
+      <div class="step-num">03</div>
+      <div class="step-icon">🚀</div>
+      <div class="step-title">UPLOAD & SELESAI</div>
+      <div class="step-desc">Drag & drop file MP3, atur tempo/pitch, preview, lalu upload langsung ke Roblox!</div>
+    </div>
+  </div>
+</section>
+
+<!-- FOOTER -->
+<footer>
+  <div class="foot-logo">XELLO STUDIO</div>
+  <div class="foot-copy">© 2026 XELLO Studio. Roblox Audio Upload Platform.</div>
+</footer>
+
+<!-- MODAL -->
+<div class="modal-bg" id="modalBg" onclick="if(event.target===this)closeModal()">
+  <div class="modal">
+    <button class="modal-close" onclick="closeModal()">✕</button>
+    <h2 id="modalTitle">LOGIN</h2>
+    <p class="modal-sub" id="modalSub">Masuk ke akun XELLO Studio kamu</p>
+    <div class="tab-row">
+      <button class="tab active" id="tabLogin" onclick="switchTab('login')">LOGIN</button>
+      <button class="tab" id="tabReg" onclick="switchTab('register')">DAFTAR</button>
+    </div>
+
+    <!-- LOGIN FORM -->
+    <div id="loginForm">
+      <div class="form-group"><label>Username</label><input type="text" id="loginUser" placeholder="username kamu"/></div>
+      <div class="form-group"><label>Password</label><input type="password" id="loginPass" placeholder="••••••••" onkeydown="if(event.key==='Enter')doLogin()"/></div>
+      <button class="form-submit" onclick="doLogin()">MASUK →</button>
+      <div class="form-msg" id="loginMsg"></div>
+    </div>
+
+    <!-- REGISTER FORM -->
+    <div id="registerForm" style="display:none">
+      <div class="form-group"><label>Username</label><input type="text" id="regUser" placeholder="min 3 karakter"/></div>
+      <div class="form-group"><label>Password</label><input type="password" id="regPass" placeholder="min 6 karakter"/></div>
+      <div class="form-group"><label>Email (opsional)</label><input type="email" id="regEmail" placeholder="email@kamu.com"/></div>
+      <div class="form-group"><label>Kode Invite (opsional)</label><input type="text" id="regCode" placeholder="XELLO-XXXXXX" style="text-transform:uppercase;letter-spacing:2px"/></div>
+      <button class="form-submit" onclick="doRegister()">DAFTAR SEKARANG →</button>
+      <div class="form-msg" id="registerMsg"></div>
+      <div class="invite-hint">Punya kode invite? Masukkan untuk upgrade tier otomatis!</div>
+    </div>
+  </div>
+</div>
+
+<script>
+// Mobile nav
+if(window.innerWidth<=600){
+  document.getElementById('mLoginBtn').style.display='block';
+  document.getElementById('mRegBtn').style.display='block';
+}
+
+function openModal(tab){
+  document.getElementById('modalBg').classList.add('show');
+  switchTab(tab);
+}
+function closeModal(){
+  document.getElementById('modalBg').classList.remove('show');
+}
+function switchTab(tab){
+  document.getElementById('tabLogin').classList.toggle('active', tab==='login');
+  document.getElementById('tabReg').classList.toggle('active', tab==='register');
+  document.getElementById('loginForm').style.display = tab==='login'?'block':'none';
+  document.getElementById('registerForm').style.display = tab==='register'?'block':'none';
+  document.getElementById('modalTitle').textContent = tab==='login'?'LOGIN':'DAFTAR';
+  document.getElementById('modalSub').textContent = tab==='login'?'Masuk ke akun XELLO Studio kamu':'Buat akun baru — gratis!';
+}
+
+function showMsg(id, msg, type){
+  const el = document.getElementById(id);
+  el.textContent = msg;
+  el.className = 'form-msg ' + type;
+}
+
+async function doLogin(){
+  const username = document.getElementById('loginUser').value.trim();
+  const password = document.getElementById('loginPass').value;
+  if(!username||!password){showMsg('loginMsg','Isi semua field!','error');return;}
+  showMsg('loginMsg','Memproses...','');
+  try{
+    const r = await fetch('/api/auth/login',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({username,password})});
+    const d = await r.json();
+    if(d.success){showMsg('loginMsg','Login berhasil! Mengalihkan...','success');setTimeout(()=>location.href='/dashboard',800);}
+    else showMsg('loginMsg',d.error||'Login gagal','error');
+  }catch{showMsg('loginMsg','Koneksi error','error');}
+}
+
+async function doRegister(){
+  const username = document.getElementById('regUser').value.trim();
+  const password = document.getElementById('regPass').value;
+  const email = document.getElementById('regEmail').value.trim();
+  const invite_code = document.getElementById('regCode').value.trim();
+  if(!username||!password){showMsg('registerMsg','Username dan password wajib diisi!','error');return;}
+  showMsg('registerMsg','Memproses...','');
+  try{
+    const r = await fetch('/api/auth/register',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({username,password,email,invite_code})});
+    const d = await r.json();
+    if(d.success){showMsg('registerMsg',d.message,'success');setTimeout(()=>switchTab('login'),1500);}
+    else showMsg('registerMsg',d.error||'Registrasi gagal','error');
+  }catch{showMsg('registerMsg','Koneksi error','error');}
+}
+
+// Check if already logged in
+fetch('/api/me').then(r=>r.json()).then(d=>{
+  if(d.authenticated && d.id) location.href='/dashboard';
+}).catch(()=>{});
+
+// Open modal if ?modal=login
+if(location.search.includes('modal=login')) openModal('login');
+</script>
+</body>
+</html>
