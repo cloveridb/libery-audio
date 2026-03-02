@@ -112,8 +112,9 @@ input[type=range].pitch-range::-webkit-slider-thumb{background:#ffd740;box-shado
 input[type=range]::-webkit-slider-thumb:hover{transform:scale(1.3)}
 .ticks{display:flex;justify-content:space-between;font-size:9px;color:rgba(200,223,240,0.18);margin-top:5px}
 
-.toggle-row{display:flex;align-items:center;justify-content:space-between;margin-bottom:12px}
-.tgl-label{font-size:12px;color:rgba(200,223,240,0.6)}
+.toggle-row{display:flex;align-items:center;justify-content:space-between;margin-bottom:14px;padding-bottom:12px;border-bottom:1px solid rgba(255,255,255,0.04)}
+.toggle-row:last-of-type{margin-bottom:0;padding-bottom:0;border-bottom:none}
+.tgl-label{font-size:12px;color:rgba(200,223,240,0.6);display:flex;align-items:center;gap:6px}
 .sw{position:relative;width:42px;height:22px;cursor:pointer;display:inline-block}
 .sw input{opacity:0;width:0;height:0;position:absolute;pointer-events:none}
 .sw-track{position:absolute;inset:0;background:rgba(255,255,255,0.06);border:1px solid rgba(255,255,255,0.08);border-radius:22px;transition:all .3s}
@@ -320,10 +321,7 @@ input[type=range]::-webkit-slider-thumb:hover{transform:scale(1.3)}
             Tempo <strong id="tempoInfo">2.0x</strong> → playback speed di Roblox jadi <strong id="playInfo">0.5x</strong> dari normal.<br>
             Pitch mengubah nada audio tanpa mempengaruhi durasi.
           </div>
-          <div class="toggle-row" style="margin-top:4px">
-            <span class="tgl-label">🎵 Preview dengan efek</span>
-            <label class="sw"><input type="checkbox" id="previewWithEffects"/><div class="sw-track"></div><div class="sw-knob"></div></label>
-          </div>
+
         </div>
       </div>
     </div>
