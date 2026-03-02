@@ -392,6 +392,27 @@ app.get("/api/admin/history", requireAdmin, (req, res) => {
 // ============================================================
 // AUDIO PROCESSING
 // ============================================================
+
+// Helper: build atempo filter chain (atempo hanya menerima 0.5 - 2.0 per node)
+function buildAtempoChain(tempo) {
+  const filters = [];
+  let t = tempo;
+  // Handle tempo < 0.5 (chain ke bawah)
+  while (t < 0.5) {
+    filters.push("atempo=0.5");
+    t /= 0.5;
+  }
+  // Handle tempo > 2.0 (chain ke atas)
+  while (t > 2.0) {
+    filters.push("atempo=2.0");
+    t /= 2.0;
+  }
+  if (Math.abs(t - 1.0) > 0.0001) {
+    filters.push(`atempo=${t.toFixed(6)}`);
+  }
+  return filters;
+}
+
 function processAudio(inputBuffer, filename, tempo = 1.0, pitch = 0) {
   return new Promise((resolve, reject) => {
     const tmpDir = os.tmpdir();
@@ -400,43 +421,42 @@ function processAudio(inputBuffer, filename, tempo = 1.0, pitch = 0) {
     const outputPath = path.join(tmpDir, `rblx_out_${ts}.mp3`);
     fs.writeFileSync(inputPath, inputBuffer);
 
-    // Build atempo filter (max 2x per filter, chain if needed)
     let filterParts = [];
 
-    // Tempo filter - atempo range is 0.5 to 100
-    if (tempo !== 1.0) {
-      if (tempo <= 100) {
-        filterParts.push(`atempo=${tempo.toFixed(4)}`);
-      } else {
-        // chain for extreme values
-        filterParts.push(`atempo=2.0,atempo=${(tempo/2).toFixed(4)}`);
-      }
-    }
-
-    // Pitch shift using asetrate + atempo trick
+    // 1. Pitch shift dulu (asetrate trick) — HARUS sebelum atempo
     if (pitch !== 0) {
       const sampleRate = 44100;
       const pitchFactor = Math.pow(2, pitch / 12);
       const newRate = Math.round(sampleRate * pitchFactor);
-      filterParts.push(`asetrate=${newRate},aresample=${sampleRate}`);
-      // compensate tempo change caused by pitch
-      filterParts.push(`atempo=${(1/pitchFactor).toFixed(4)}`);
+      filterParts.push(`asetrate=${newRate}`);
+      filterParts.push(`aresample=${sampleRate}`);
+      // Kompensasi perubahan durasi akibat asetrate
+      // 1/pitchFactor bisa < 0.5, jadi pakai buildAtempoChain
+      const tempoComp = 1 / pitchFactor;
+      filterParts.push(...buildAtempoChain(tempoComp));
+    }
+
+    // 2. Tempo adjustment setelah pitch
+    if (tempo !== 1.0) {
+      filterParts.push(...buildAtempoChain(tempo));
     }
 
     const args = ["-i", inputPath];
     if (filterParts.length > 0) {
       args.push("-af", filterParts.join(","));
     }
-    args.push("-ar", "44100", "-ab", "192k", "-y", outputPath);
+    // Gunakan -b:a bukan -ab (deprecated)
+    args.push("-ar", "44100", "-b:a", "192k", "-y", outputPath);
 
     log(`FFmpeg args: ${args.join(" ")}`);
 
-    execFile(FFMPEG_PATH, args, { timeout: 120000 }, (err) => {
+    execFile(FFMPEG_PATH, args, { timeout: 120000 }, (err, stdout, stderr) => {
       try { fs.unlinkSync(inputPath); } catch {}
-      if (err) { 
-        log(`FFmpeg error detail: ${err.message}`, "error");
-        try { fs.unlinkSync(outputPath); } catch {}; 
-        return reject(err); 
+      if (err) {
+        log(`FFmpeg error: ${err.message}`, "error");
+        log(`FFmpeg stderr: ${stderr}`, "error");
+        try { fs.unlinkSync(outputPath); } catch {}
+        return reject(err);
       }
       try {
         const buf = fs.readFileSync(outputPath);
@@ -446,22 +466,6 @@ function processAudio(inputBuffer, filename, tempo = 1.0, pitch = 0) {
       } catch (e) { reject(e); }
     });
   });
-}
-
-async function pollOperation(operationId, apiKey, maxAttempts = 20) {
-  for (let i = 0; i < maxAttempts; i++) {
-    await new Promise(r => setTimeout(r, 3000));
-    try {
-      const res = await axios.get(`https://apis.roblox.com/assets/v1/operations/${operationId}`, {
-        headers: { "x-api-key": apiKey }
-      });
-      if (res.data.done) {
-        if (res.data.error) return { success: false, error: res.data.error };
-        return { success: true, assetId: res.data.response?.assetId };
-      }
-    } catch (e) { log(`Poll ${i+1} error: ${e.message}`, "warn"); }
-  }
-  return { success: false, error: "Timeout polling" };
 }
 
 // ============================================================
