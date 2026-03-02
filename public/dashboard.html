@@ -380,8 +380,12 @@ input[type=range]::-webkit-slider-thumb:hover{transform:scale(1.3)}
             <div class="form-hint">Kosongkan jika tidak ingin mengubah key tersimpan</div>
           </div>
         </div>
-        <button class="save-btn" onclick="saveRoblox()">💾 SIMPAN</button>
+        <div style="display:flex;gap:10px;flex-wrap:wrap;align-items:center">
+          <button class="save-btn" onclick="saveRoblox()">💾 SIMPAN</button>
+          <button class="save-btn" onclick="testRoblox()" style="background:rgba(0,229,160,0.15);border:1px solid rgba(0,229,160,0.3);color:#00e5a0">🔍 CEK KONEKSI</button>
+        </div>
         <div class="msg-inline" id="robloxMsg"></div>
+        <div id="robloxStatus" style="margin-top:12px;display:none;background:var(--bg3);border-radius:10px;padding:14px;font-size:12px;font-family:Space Mono;line-height:2"></div>
       </div>
     </div>
 
@@ -838,6 +842,23 @@ async function redeemInvite(){
   msgEl.textContent = d.message || d.error;
   msgEl.className = 'msg-inline ' + (d.success?'success':'error');
   if(d.success){await loadUser();toast('Tier berhasil diupgrade! 🎉','success');}
+}
+
+async function testRoblox(){
+  const statusEl = document.getElementById('robloxStatus');
+  statusEl.style.display = 'block';
+  statusEl.innerHTML = '⏳ Mengecek...';
+  try {
+    const r = await fetch('/api/debug/roblox');
+    const d = await r.json();
+    statusEl.innerHTML = 
+      '<span style="color:rgba(200,223,240,0.4)">Tipe:</span> ' + d.creator_type + '<br>' +
+      '<span style="color:rgba(200,223,240,0.4)">User ID:</span> ' + (d.roblox_user_id || '❌ Kosong') + '<br>' +
+      '<span style="color:rgba(200,223,240,0.4)">API Key:</span> ' + (d.api_key_preview || '❌ Belum tersimpan') + '<br>' +
+      '<span style="color:rgba(200,223,240,0.4)">Status:</span> ' + (d.has_api_key ? '<span style="color:#00e5a0">✅ Terhubung</span>' : '<span style="color:#ff5c7b">❌ Belum ada API Key</span>');
+  } catch(e) {
+    statusEl.innerHTML = '❌ Error: ' + e.message;
+  }
 }
 
 async function doLogout(){

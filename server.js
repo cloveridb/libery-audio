@@ -267,8 +267,14 @@ app.post("/api/settings/roblox", requireAuth, (req, res) => {
 
   if (creator_type === "user") {
     if (!roblox_user_id) return res.status(400).json({ error: "Roblox User ID wajib diisi" });
-    db.prepare("UPDATE users SET creator_type='user', roblox_user_id=?, roblox_api_key=?, roblox_group_id=NULL, roblox_group_api_key=NULL WHERE id=?")
-      .run(roblox_user_id, roblox_api_key || null, req.session.userId);
+    // Jika api_key kosong, pertahankan yang lama
+    if (roblox_api_key && roblox_api_key.trim()) {
+      db.prepare("UPDATE users SET creator_type='user', roblox_user_id=?, roblox_api_key=?, roblox_group_id=NULL, roblox_group_api_key=NULL WHERE id=?")
+        .run(roblox_user_id, roblox_api_key.trim(), req.session.userId);
+    } else {
+      db.prepare("UPDATE users SET creator_type='user', roblox_user_id=?, roblox_group_id=NULL, roblox_group_api_key=NULL WHERE id=?")
+        .run(roblox_user_id, req.session.userId);
+    }
   } else {
     if (!roblox_group_id || !roblox_user_id) return res.status(400).json({ error: "Group ID dan User ID wajib diisi" });
     db.prepare("UPDATE users SET creator_type='group', roblox_user_id=?, roblox_group_id=?, roblox_group_api_key=?, roblox_api_key=NULL WHERE id=?")
@@ -393,15 +399,49 @@ function processAudio(inputBuffer, filename, tempo = 1.0, pitch = 0) {
     const inputPath = path.join(tmpDir, `rblx_in_${ts}.mp3`);
     const outputPath = path.join(tmpDir, `rblx_out_${ts}.mp3`);
     fs.writeFileSync(inputPath, inputBuffer);
-    const pitchRatio = Math.pow(2, pitch / 12);
-    const filterStr = `rubberband=tempo=${tempo}:pitch=${pitchRatio.toFixed(6)}`;
-    const args = ["-i", inputPath, "-af", filterStr, "-ar", "44100", "-ab", "192k", "-y", outputPath];
+
+    // Build atempo filter (max 2x per filter, chain if needed)
+    let filterParts = [];
+
+    // Tempo filter - atempo range is 0.5 to 100
+    if (tempo !== 1.0) {
+      if (tempo <= 100) {
+        filterParts.push(`atempo=${tempo.toFixed(4)}`);
+      } else {
+        // chain for extreme values
+        filterParts.push(`atempo=2.0,atempo=${(tempo/2).toFixed(4)}`);
+      }
+    }
+
+    // Pitch shift using asetrate + atempo trick
+    if (pitch !== 0) {
+      const sampleRate = 44100;
+      const pitchFactor = Math.pow(2, pitch / 12);
+      const newRate = Math.round(sampleRate * pitchFactor);
+      filterParts.push(`asetrate=${newRate},aresample=${sampleRate}`);
+      // compensate tempo change caused by pitch
+      filterParts.push(`atempo=${(1/pitchFactor).toFixed(4)}`);
+    }
+
+    const args = ["-i", inputPath];
+    if (filterParts.length > 0) {
+      args.push("-af", filterParts.join(","));
+    }
+    args.push("-ar", "44100", "-ab", "192k", "-y", outputPath);
+
+    log(`FFmpeg args: ${args.join(" ")}`);
+
     execFile(FFMPEG_PATH, args, { timeout: 120000 }, (err) => {
       try { fs.unlinkSync(inputPath); } catch {}
-      if (err) { try { fs.unlinkSync(outputPath); } catch {}; return reject(err); }
+      if (err) { 
+        log(`FFmpeg error detail: ${err.message}`, "error");
+        try { fs.unlinkSync(outputPath); } catch {}; 
+        return reject(err); 
+      }
       try {
         const buf = fs.readFileSync(outputPath);
         fs.unlinkSync(outputPath);
+        log(`Audio processed: ${(inputBuffer.length/1024).toFixed(0)}KB -> ${(buf.length/1024).toFixed(0)}KB`);
         resolve(buf);
       } catch (e) { reject(e); }
     });
@@ -546,6 +586,20 @@ app.delete("/api/history/:id", requireAuth, (req, res) => {
 });
 
 // Health check
+
+// Debug endpoint - cek roblox settings user
+app.get("/api/debug/roblox", requireAuth, (req, res) => {
+  const user = db.prepare("SELECT creator_type, roblox_user_id, roblox_group_id, roblox_api_key, roblox_group_api_key FROM users WHERE id=?").get(req.session.userId);
+  res.json({
+    creator_type: user.creator_type,
+    roblox_user_id: user.roblox_user_id,
+    roblox_group_id: user.roblox_group_id,
+    has_api_key: !!(user.roblox_api_key),
+    has_group_api_key: !!(user.roblox_group_api_key),
+    api_key_preview: user.roblox_api_key ? user.roblox_api_key.slice(0,20)+"..." : null
+  });
+});
+
 app.get("/ping", (req, res) => res.json({ status: "ok", time: new Date().toISOString(), port: PORT }));
 
 // Page ROUTES
