@@ -13,6 +13,16 @@ const { v4: uuidv4 } = require("uuid");
 const Database = require("better-sqlite3");
 require("dotenv").config();
 
+// Use bundled ffmpeg for Railway/cloud hosting
+let FFMPEG_PATH = "ffmpeg";
+try {
+  const ffmpegInstaller = require("@ffmpeg-installer/ffmpeg");
+  FFMPEG_PATH = ffmpegInstaller.path;
+  console.log("FFmpeg bundled path:", FFMPEG_PATH);
+} catch(e) {
+  console.log("Using system ffmpeg");
+}
+
 const app = express();
 const PORT = process.env.PORT || 1179;
 
@@ -386,7 +396,7 @@ function processAudio(inputBuffer, filename, tempo = 1.0, pitch = 0) {
     const pitchRatio = Math.pow(2, pitch / 12);
     const filterStr = `rubberband=tempo=${tempo}:pitch=${pitchRatio.toFixed(6)}`;
     const args = ["-i", inputPath, "-af", filterStr, "-ar", "44100", "-ab", "192k", "-y", outputPath];
-    execFile("ffmpeg", args, { timeout: 120000 }, (err) => {
+    execFile(FFMPEG_PATH, args, { timeout: 120000 }, (err) => {
       try { fs.unlinkSync(inputPath); } catch {}
       if (err) { try { fs.unlinkSync(outputPath); } catch {}; return reject(err); }
       try {
