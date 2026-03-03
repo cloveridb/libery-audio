@@ -610,7 +610,7 @@ app.post("/api/fetch-audio", requireAuth, async (req, res) => {
   }
 });
 
-(operationId, apiKey, maxAttempts = 20) {
+async function pollOperation(operationId, apiKey, maxAttempts = 20) {
   for (let i = 0; i < maxAttempts; i++) {
     await new Promise(r => setTimeout(r, 3000));
     try {
