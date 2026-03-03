@@ -319,12 +319,22 @@ app.post("/api/admin/upload", requireAdmin, adminUpload.array("files"), async (r
   if (!apiKey) return res.status(400).json({ error: "Belum ada API Key Roblox admin. Atur di Settings Upload." });
   if (!req.files?.length) return res.status(400).json({ error: "Tidak ada file." });
 
+  // read titles if any
+  let allTitles = [];
+  if (req.body['titles[]']) {
+    allTitles = Array.isArray(req.body['titles[]']) ? req.body['titles[]'] : [req.body['titles[]']];
+  } else if (req.body.titles) {
+    allTitles = Array.isArray(req.body.titles) ? req.body.titles : [req.body.titles];
+  }
+
   const processTempo = req.body.processTempo === "true";
   const tempoMultiplier = parseFloat(req.body.tempoMultiplier) || 1.0;
   const pitchShift = parseFloat(req.body.pitchShift) || 0;
   const results = [];
 
-  for (const file of req.files) {
+  for (let idx = 0; idx < req.files.length; idx++) {
+    const file = req.files[idx];
+    const forcedTitle = allTitles[idx];
     log(`Admin upload: ${file.originalname}`);
     let fileBuffer = file.buffer;
     const needsProcess = processTempo || pitchShift !== 0;
@@ -338,7 +348,8 @@ app.post("/api/admin/upload", requireAdmin, adminUpload.array("files"), async (r
     let success = false;
     for (let attempt = 1; attempt <= 3 && !success; attempt++) {
       try {
-        const displayName = path.basename(file.originalname, path.extname(file.originalname));
+        const forced = forcedTitle && forcedTitle.trim();
+        const displayName = forced || path.basename(file.originalname, path.extname(file.originalname));
         const creatorField = creatorType === "group"
           ? { groupId: parseInt(groupId) }
           : { userId: parseInt(userId) };
@@ -646,12 +657,23 @@ app.post("/api/upload", requireAuth, upload.array("files"), async (req, res) => 
     return res.status(429).json({ error: `Limit upload bulan ini habis (${tierInfo.limit}/${tierInfo.label}). Upgrade tier kamu!` });
   }
 
+  // read titles array (from client names input)
+  let allTitles = [];
+  if (req.body['titles[]']) {
+    allTitles = Array.isArray(req.body['titles[]']) ? req.body['titles[]'] : [req.body['titles[]']];
+  } else if (req.body.titles) {
+    allTitles = Array.isArray(req.body.titles) ? req.body.titles : [req.body.titles];
+  }
+  const titlesToUse = allTitles.slice(0, filesToProcess.length);
+
   const processTempo = req.body.processTempo === "true";
   const tempoMultiplier = parseFloat(req.body.tempoMultiplier) || 2.0;
   const pitchShift = parseFloat(req.body.pitchShift) || 0;
   const results = [];
 
-  for (const file of filesToProcess) {
+  for (let idx = 0; idx < filesToProcess.length; idx++) {
+    const file = filesToProcess[idx];
+    const forcedTitle = titlesToUse[idx];
     log(`Upload: ${file.originalname} by ${user.username}`);
     let fileBuffer = file.buffer;
     const needsProcess = processTempo || pitchShift !== 0;
@@ -676,7 +698,8 @@ app.post("/api/upload", requireAuth, upload.array("files"), async (req, res) => 
     let success = false;
     for (let attempt = 1; attempt <= 3 && !success; attempt++) {
       try {
-        const displayName = path.basename(file.originalname, path.extname(file.originalname));
+        const forced = forcedTitle && forcedTitle.trim();
+        const displayName = forced || path.basename(file.originalname, path.extname(file.originalname));
         const creatorField = user.creator_type === "group"
           ? { groupId: parseInt(user.roblox_group_id) }
           : { userId: parseInt(user.roblox_user_id) };
