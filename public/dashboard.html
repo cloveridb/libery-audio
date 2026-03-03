@@ -112,8 +112,9 @@ input[type=range].pitch-range::-webkit-slider-thumb{background:#ffd740;box-shado
 input[type=range]::-webkit-slider-thumb:hover{transform:scale(1.3)}
 .ticks{display:flex;justify-content:space-between;font-size:9px;color:rgba(200,223,240,0.18);margin-top:5px}
 
-.toggle-row{display:flex;align-items:center;justify-content:space-between;margin-bottom:12px}
-.tgl-label{font-size:12px;color:rgba(200,223,240,0.6)}
+.toggle-row{display:flex;align-items:center;justify-content:space-between;margin-bottom:14px;padding-bottom:12px;border-bottom:1px solid rgba(255,255,255,0.04)}
+.toggle-row:last-of-type{margin-bottom:0;padding-bottom:0;border-bottom:none}
+.tgl-label{font-size:12px;color:rgba(200,223,240,0.6);display:flex;align-items:center;gap:6px}
 .sw{position:relative;width:42px;height:22px;cursor:pointer;display:inline-block}
 .sw input{opacity:0;width:0;height:0;position:absolute;pointer-events:none}
 .sw-track{position:absolute;inset:0;background:rgba(255,255,255,0.06);border:1px solid rgba(255,255,255,0.08);border-radius:22px;transition:all .3s}
@@ -188,7 +189,52 @@ input[type=range]::-webkit-slider-thumb:hover{transform:scale(1.3)}
 .info-box strong{color:var(--c)}
 .warn-box{background:rgba(255,152,0,0.06);border:1px solid rgba(255,152,0,0.2);border-radius:10px;padding:14px 16px;font-size:12px;color:rgba(255,183,77,0.8);line-height:1.7;margin-bottom:16px}
 
-/* TOAST */
+/* EDITOR PAGE */
+.ed-url-box{display:flex;gap:8px;margin-bottom:16px;flex-wrap:wrap}
+.ed-url-box input{flex:1;min-width:0;background:rgba(0,229,255,0.03);border:1px solid rgba(0,229,255,0.15);border-radius:8px;padding:11px 14px;color:#c8dff0;font-size:13px;outline:none;transition:all .3s}
+.ed-url-box input:focus{border-color:rgba(0,229,255,0.4);background:rgba(0,229,255,0.05)}
+.ed-fetch-btn{padding:11px 18px;background:linear-gradient(135deg,#7b2fff,#ff2d6b);color:#fff;font-family:'Orbitron',sans-serif;font-size:11px;font-weight:700;letter-spacing:1px;border:none;border-radius:8px;cursor:pointer;white-space:nowrap;transition:all .3s}
+.ed-fetch-btn:hover:not(:disabled){transform:translateY(-1px);box-shadow:0 6px 20px rgba(123,47,255,0.4)}
+.ed-fetch-btn:disabled{opacity:.4;cursor:not-allowed;transform:none}
+.ed-drop{border:2px dashed rgba(0,229,255,0.2);border-radius:12px;padding:28px;text-align:center;cursor:pointer;background:rgba(0,229,255,0.02);transition:all .3s;margin-bottom:16px}
+.ed-drop:hover,.ed-drop.drag-over{border-color:var(--c);background:rgba(0,229,255,0.05)}
+.ed-waveform-wrap{position:relative;background:var(--bg3);border:1px solid rgba(255,255,255,0.05);border-radius:10px;overflow:hidden;margin-bottom:12px;touch-action:none;cursor:col-resize}
+#edCanvas{display:block;width:100%;height:80px}
+.ed-time-row{display:flex;justify-content:space-between;font-size:10px;font-family:'Space Mono',monospace;color:rgba(200,223,240,0.35);margin-bottom:14px;padding:0 2px}
+.ed-trim-row{display:grid;grid-template-columns:1fr 1fr;gap:12px;margin-bottom:14px}
+.ed-trim-input{background:var(--bg3);border:1px solid rgba(255,255,255,0.06);border-radius:8px;padding:10px 12px}
+.ed-trim-label{font-size:9px;letter-spacing:2px;color:rgba(200,223,240,0.3);text-transform:uppercase;margin-bottom:5px}
+.ed-trim-val{font-family:'Orbitron',sans-serif;font-size:16px;font-weight:900;color:var(--c)}
+.ed-fade-row{display:grid;grid-template-columns:1fr 1fr;gap:12px;margin-bottom:16px}
+.ed-fade-block{background:var(--bg3);border:1px solid rgba(255,255,255,0.05);border-radius:10px;padding:14px}
+.ed-fade-label{font-size:9px;letter-spacing:2px;text-transform:uppercase;margin-bottom:8px;display:flex;justify-content:space-between}
+.ed-fi-label{color:rgba(123,47,255,0.8)}
+.ed-fo-label{color:rgba(255,45,107,0.8)}
+.ed-fade-val{font-family:'Orbitron',sans-serif;font-size:18px;font-weight:900;margin-bottom:8px}
+.ed-fi-val{color:#7b2fff}
+.ed-fo-val{color:#ff2d6b}
+input[type=range].fi-range{background:linear-gradient(90deg,#7b2fff var(--p,0%),rgba(255,255,255,0.06) var(--p,0%))}
+input[type=range].fo-range{background:linear-gradient(90deg,#ff2d6b var(--p,0%),rgba(255,255,255,0.06) var(--p,0%))}
+input[type=range].fi-range::-webkit-slider-thumb{background:#7b2fff;box-shadow:0 0 8px #7b2fff}
+input[type=range].fo-range::-webkit-slider-thumb{background:#ff2d6b;box-shadow:0 0 8px #ff2d6b}
+.ed-controls{display:flex;gap:10px;align-items:center;margin-bottom:16px;flex-wrap:wrap}
+.ed-play-btn{width:44px;height:44px;border-radius:50%;border:2px solid rgba(0,229,255,0.3);background:none;color:var(--c);font-size:18px;cursor:pointer;display:flex;align-items:center;justify-content:center;transition:all .2s;flex-shrink:0}
+.ed-play-btn:hover{background:rgba(0,229,255,0.1);box-shadow:var(--glow)}
+.ed-filename{flex:1;font-size:12px;color:rgba(200,223,240,0.6);white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.ed-duration{font-family:'Space Mono',monospace;font-size:11px;color:rgba(200,223,240,0.4);flex-shrink:0}
+.ed-action-row{display:flex;gap:10px;flex-wrap:wrap}
+.ed-apply-btn{flex:1;padding:12px;background:linear-gradient(135deg,var(--c),var(--c2));color:#04080f;font-family:'Orbitron',sans-serif;font-size:11px;font-weight:700;letter-spacing:2px;border:none;border-radius:8px;cursor:pointer;transition:all .3s}
+.ed-apply-btn:hover:not(:disabled){transform:translateY(-2px);box-shadow:0 8px 24px rgba(0,229,255,0.3)}
+.ed-apply-btn:disabled{opacity:.4;cursor:not-allowed;transform:none}
+.ed-reset-btn{padding:12px 18px;background:rgba(255,255,255,0.04);border:1px solid rgba(255,255,255,0.08);color:rgba(200,223,240,0.5);font-family:'Orbitron',sans-serif;font-size:10px;letter-spacing:1px;border-radius:8px;cursor:pointer;transition:all .2s}
+.ed-reset-btn:hover{background:rgba(255,255,255,0.07);color:#c8dff0}
+.ed-info-placeholder{text-align:center;padding:40px 20px;color:rgba(200,223,240,0.2)}
+.ed-info-placeholder .ei{font-size:40px;display:block;margin-bottom:10px}
+.ed-info-placeholder p{font-size:13px;line-height:1.7}
+.ed-progress{margin-top:6px;display:none}
+.ed-prog-bar-bg{height:3px;background:rgba(255,255,255,0.06);border-radius:2px;overflow:hidden}
+.ed-prog-bar{height:100%;background:linear-gradient(90deg,var(--c),var(--c2));width:0;transition:width .2s}
+
 .toast{position:fixed;bottom:24px;right:24px;background:var(--bg3);border:1px solid var(--border);border-radius:10px;padding:12px 18px;font-size:12px;color:#c8dff0;box-shadow:0 8px 30px rgba(0,0,0,0.5);z-index:1000;transform:translateX(120%);transition:transform .3s;max-width:280px}
 .toast.show{transform:translateX(0)}
 .toast.success{border-color:rgba(0,229,160,0.3);color:var(--g)}
@@ -233,6 +279,7 @@ input[type=range]::-webkit-slider-thumb:hover{transform:scale(1.3)}
   </div>
   <nav class="sb-nav">
     <a class="active" onclick="goPage('upload')" id="nav-upload"><span class="icon">🚀</span>Upload Audio</a>
+    <a onclick="goPage('editor')" id="nav-editor"><span class="icon">✂️</span>Audio Editor</a>
     <a onclick="goPage('history')" id="nav-history"><span class="icon">📋</span>Riwayat Upload</a>
     <a onclick="goPage('settings')" id="nav-settings"><span class="icon">⚙️</span>Settings</a>
   </nav>
@@ -320,16 +367,111 @@ input[type=range]::-webkit-slider-thumb:hover{transform:scale(1.3)}
             Tempo <strong id="tempoInfo">2.0x</strong> → playback speed di Roblox jadi <strong id="playInfo">0.5x</strong> dari normal.<br>
             Pitch mengubah nada audio tanpa mempengaruhi durasi.
           </div>
-          <div class="toggle-row" style="margin-top:4px">
-            <span class="tgl-label">🎵 Preview dengan efek</span>
-            <label class="sw"><input type="checkbox" id="previewWithEffects"/><div class="sw-track"></div><div class="sw-knob"></div></label>
+
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- EDITOR PAGE -->
+  <div class="page-section" id="page-editor">
+    <div class="topbar" style="margin-bottom:16px">
+      <div><div class="page-title">Audio Editor</div><div class="page-sub">Trim · Fade · Download dari YouTube/SoundCloud</div></div>
+    </div>
+
+    <!-- URL DOWNLOADER -->
+    <div class="card" style="margin-bottom:16px">
+      <div class="card-title"><span>⬇️</span> DOWNLOAD DARI URL</div>
+      <div class="warn-box" style="margin-bottom:12px">
+        ⚡ Masukkan link <strong>YouTube</strong> atau <strong>SoundCloud</strong> untuk otomatis download audio MP3
+      </div>
+      <div class="ed-url-box">
+        <input type="url" id="edUrlInput" placeholder="https://youtube.com/watch?v=... atau https://soundcloud.com/..."/>
+        <button class="ed-fetch-btn" id="edFetchBtn" onclick="edFetchUrl()">⬇️ Ambil Audio</button>
+      </div>
+      <div class="ed-progress" id="edFetchProgress">
+        <div class="ed-prog-bar-bg"><div class="ed-prog-bar" id="edFetchBar" style="width:60%"></div></div>
+        <div style="font-size:11px;color:rgba(200,223,240,0.4);margin-top:6px;text-align:center" id="edFetchStatus">Mengunduh...</div>
+      </div>
+    </div>
+
+    <!-- WAVEFORM EDITOR -->
+    <div class="card">
+      <div class="card-title"><span>◈</span> WAVEFORM EDITOR</div>
+
+      <!-- Drop zone for local file -->
+      <div class="ed-drop" id="edDropZone" onclick="document.getElementById('edFileInput').click()">
+        <span style="font-size:28px;display:block;margin-bottom:8px">🎵</span>
+        <div style="font-size:13px;color:rgba(200,223,240,0.5)">Drag & drop MP3 atau <strong style="color:var(--c)">klik untuk pilih file</strong></div>
+        <div style="font-size:11px;color:rgba(200,223,240,0.25);margin-top:4px">Atau gunakan downloader di atas</div>
+      </div>
+      <input type="file" id="edFileInput" accept=".mp3,audio/mpeg" style="display:none"/>
+
+      <!-- Placeholder -->
+      <div id="edPlaceholder" class="ed-info-placeholder">
+        <span class="ei">✂️</span>
+        <p>Upload atau download musik dulu untuk mulai mengedit.<br>Setelah itu kamu bisa trim, fade in/out, dan preview!</p>
+      </div>
+
+      <!-- Editor controls (hidden until file loaded) -->
+      <div id="edControls" style="display:none">
+        <div class="ed-controls">
+          <button class="ed-play-btn" id="edPlayBtn" onclick="edTogglePlay()">▶</button>
+          <div class="ed-filename" id="edFileName">—</div>
+          <div class="ed-duration" id="edDuration">0:00</div>
+        </div>
+
+        <!-- Waveform Canvas -->
+        <div class="ed-waveform-wrap" id="edWaveWrap">
+          <canvas id="edCanvas" height="80"></canvas>
+        </div>
+        <div class="ed-time-row">
+          <span id="edStartLbl">0:00</span>
+          <span id="edMidLbl">—</span>
+          <span id="edEndLbl">0:00</span>
+        </div>
+
+        <!-- Trim indicators -->
+        <div class="ed-trim-row">
+          <div class="ed-trim-input">
+            <div class="ed-trim-label">✂️ Mulai Trim</div>
+            <div class="ed-trim-val" id="edTrimStartVal">0:00.0</div>
           </div>
+          <div class="ed-trim-input">
+            <div class="ed-trim-label">✂️ Akhir Trim</div>
+            <div class="ed-trim-val" id="edTrimEndVal">0:00.0</div>
+          </div>
+        </div>
+
+        <!-- Fade controls -->
+        <div class="ed-fade-row">
+          <div class="ed-fade-block">
+            <div class="ed-fade-label"><span class="ed-fi-label">◀ FADE IN</span><span id="edFiVal" style="color:rgba(200,223,240,0.4)">0.0s</span></div>
+            <div class="ed-fade-val ed-fi-val" id="edFiDisp">0.0s</div>
+            <input type="range" class="fi-range" id="edFiRange" min="0" max="100" value="0" step="1" oninput="edUpdateFade(this,'in')"/>
+          </div>
+          <div class="ed-fade-block">
+            <div class="ed-fade-label"><span class="ed-fo-label">FADE OUT ▶</span><span id="edFoVal" style="color:rgba(200,223,240,0.4)">0.0s</span></div>
+            <div class="ed-fade-val ed-fo-val" id="edFoDisp">0.0s</div>
+            <input type="range" class="fo-range" id="edFoRange" min="0" max="100" value="0" step="1" oninput="edUpdateFade(this,'out')"/>
+          </div>
+        </div>
+
+        <!-- Actions -->
+        <div class="ed-action-row">
+          <button class="ed-apply-btn" id="edApplyBtn" onclick="edApplyAndSend()">✅ Proses & Kirim ke Upload</button>
+          <button class="ed-reset-btn" onclick="edReset()">↺ RESET</button>
+        </div>
+        <div class="ed-progress" id="edApplyProgress" style="margin-top:12px">
+          <div class="ed-prog-bar-bg"><div class="ed-prog-bar" id="edApplyBar" style="width:50%"></div></div>
+          <div style="font-size:11px;color:rgba(200,223,240,0.4);margin-top:6px;text-align:center" id="edApplyStatus">Memproses dengan FFmpeg...</div>
         </div>
       </div>
     </div>
   </div>
 
   <!-- HISTORY PAGE -->
+
   <div class="page-section" id="page-history">
     <div class="topbar" style="margin-bottom:16px">
       <div><div class="page-title">Riwayat Upload</div><div class="page-sub">100 upload terakhir</div></div>
@@ -812,9 +954,386 @@ async function startUpload(){
   btn.disabled = files.length===0;
 }
 
+
 // =============================================
-// HISTORY
+// AUDIO EDITOR
 // =============================================
+let edBuf = null, edFile = null;
+let edTrimStart = 0, edTrimEnd = 0;
+let edFadeIn = 0, edFadeOut = 0;
+let edPlaying = false, edSrc = null, edGainNode = null, edACtx = null;
+let edPlayStartWall = 0, edPlayOffset = 0, edRafId = null;
+let edDrag = null; // 'start'|'end'|null
+
+// Setup editor drop zone & file input
+document.addEventListener('DOMContentLoaded', ()=>{
+  const dz = document.getElementById('edDropZone');
+  const fi = document.getElementById('edFileInput');
+  if(dz){
+    dz.addEventListener('dragover', e=>{e.preventDefault();dz.classList.add('drag-over')});
+    dz.addEventListener('dragleave', ()=>dz.classList.remove('drag-over'));
+    dz.addEventListener('drop', e=>{
+      e.preventDefault();dz.classList.remove('drag-over');
+      const f = Array.from(e.dataTransfer.files).find(f=>f.type==='audio/mpeg'||f.name.endsWith('.mp3'));
+      if(f) edLoadFile(f); else toast('Hanya file MP3','error');
+    });
+  }
+  if(fi) fi.addEventListener('change', ()=>{ if(fi.files[0]) edLoadFile(fi.files[0]); fi.value=''; });
+
+  // Canvas pointer events for drag handles
+  const canvas = document.getElementById('edCanvas');
+  if(canvas){
+    canvas.addEventListener('pointerdown', edHandleDown);
+    canvas.addEventListener('pointermove', edHandleMove);
+    canvas.addEventListener('pointerup', ()=>{ edDrag=null; });
+    canvas.addEventListener('pointercancel', ()=>{ edDrag=null; });
+  }
+
+  window.addEventListener('resize', ()=>{ if(edBuf) edDrawWave(); });
+});
+
+function edLoadFile(file){
+  edFile = file;
+  const reader = new FileReader();
+  reader.onload = async e=>{
+    try{
+      const ctx = new (window.AudioContext||window.webkitAudioContext)();
+      edBuf = await ctx.decodeAudioData(e.target.result.slice(0));
+      await ctx.close();
+      edTrimStart = 0;
+      edTrimEnd = edBuf.duration;
+      edFadeIn = 0; edFadeOut = 0;
+      document.getElementById('edFiRange').value = 0;
+      document.getElementById('edFoRange').value = 0;
+      edUpdateRangeStyle(document.getElementById('edFiRange'));
+      edUpdateRangeStyle(document.getElementById('edFoRange'));
+      document.getElementById('edFileName').textContent = file.name;
+      document.getElementById('edDuration').textContent = fmtTime(edBuf.duration);
+      document.getElementById('edPlaceholder').style.display = 'none';
+      document.getElementById('edControls').style.display = 'block';
+      document.getElementById('edDropZone').style.display = 'none';
+      edUpdateLabels();
+      setTimeout(edDrawWave, 50);
+    } catch(err){ toast('Gagal decode audio: '+err.message,'error'); }
+  };
+  reader.readAsArrayBuffer(file);
+}
+
+function edHandleDown(e){
+  if(!edBuf) return;
+  const rect = document.getElementById('edCanvas').getBoundingClientRect();
+  const x = e.clientX - rect.left;
+  const pct = Math.max(0, Math.min(1, x / rect.width));
+  const t = pct * edBuf.duration;
+  const distStart = Math.abs(t - edTrimStart);
+  const distEnd   = Math.abs(t - edTrimEnd);
+  edDrag = distStart <= distEnd ? 'start' : 'end';
+  document.getElementById('edCanvas').setPointerCapture(e.pointerId);
+  e.preventDefault();
+}
+
+function edHandleMove(e){
+  if(!edDrag || !edBuf) return;
+  const rect = document.getElementById('edCanvas').getBoundingClientRect();
+  const x = Math.max(0, Math.min(e.clientX - rect.left, rect.width));
+  const t = (x / rect.width) * edBuf.duration;
+  if(edDrag === 'start'){
+    edTrimStart = Math.max(0, Math.min(t, edTrimEnd - 0.3));
+    edFadeIn = Math.min(edFadeIn, Math.max(0, (edTrimEnd - edTrimStart) * 0.4));
+  } else {
+    edTrimEnd = Math.min(edBuf.duration, Math.max(t, edTrimStart + 0.3));
+    edFadeOut = Math.min(edFadeOut, Math.max(0, (edTrimEnd - edTrimStart) * 0.4));
+  }
+  edUpdateLabels();
+  edDrawWave();
+}
+
+function edUpdateFade(input, type){
+  if(!edBuf) return;
+  const maxFade = Math.max(0, (edTrimEnd - edTrimStart) * 0.45);
+  const val = (parseInt(input.value)/100) * maxFade;
+  if(type === 'in'){
+    edFadeIn = val;
+    document.getElementById('edFiDisp').textContent = val.toFixed(1)+'s';
+    document.getElementById('edFiVal').textContent = val.toFixed(1)+'s';
+  } else {
+    edFadeOut = val;
+    document.getElementById('edFoDisp').textContent = val.toFixed(1)+'s';
+    document.getElementById('edFoVal').textContent = val.toFixed(1)+'s';
+  }
+  edUpdateRangeStyle(input);
+  edDrawWave();
+}
+
+function edUpdateRangeStyle(input){
+  const p = parseInt(input.value) + '%';
+  input.style.setProperty('--p', p);
+}
+
+function edUpdateLabels(){
+  if(!edBuf) return;
+  document.getElementById('edTrimStartVal').textContent = fmtTimeFull(edTrimStart);
+  document.getElementById('edTrimEndVal').textContent   = fmtTimeFull(edTrimEnd);
+  document.getElementById('edStartLbl').textContent = fmtTime(edTrimStart);
+  document.getElementById('edMidLbl').textContent   = fmtTime((edTrimStart+edTrimEnd)/2);
+  document.getElementById('edEndLbl').textContent   = fmtTime(edTrimEnd);
+  document.getElementById('edDuration').textContent = fmtTime(edBuf.duration);
+}
+
+function fmtTimeFull(s){
+  if(isNaN(s)) return '0:00.0';
+  const m = Math.floor(s/60);
+  const sec = (s%60).toFixed(1);
+  return `${m}:${parseFloat(sec)<10?'0':''}${sec}`;
+}
+
+function edDrawWave(){
+  const canvas = document.getElementById('edCanvas');
+  if(!canvas || !edBuf) return;
+  const dpr = window.devicePixelRatio || 1;
+  const rect = canvas.getBoundingClientRect();
+  const W = Math.round(rect.width * dpr);
+  const H = Math.round(rect.height * dpr);
+  if(!W || !H) return;
+  canvas.width = W; canvas.height = H;
+  const ctx = canvas.getContext('2d');
+
+  const data = edBuf.getChannelData(0);
+  const dur = edBuf.duration;
+  const step = Math.ceil(data.length / W);
+
+  // Background
+  ctx.fillStyle = '#080f1c';
+  ctx.fillRect(0, 0, W, H);
+
+  // Dimmed region (outside trim)
+  const sx = Math.round((edTrimStart / dur) * W);
+  const ex = Math.round((edTrimEnd / dur) * W);
+
+  for(let i = 0; i < W; i++){
+    let max = 0;
+    for(let j = 0; j < step; j++){
+      const v = Math.abs(data[i*step+j]||0);
+      if(v>max) max=v;
+    }
+    const barH = Math.max(2, max * H * 0.82);
+    const inRegion = (i >= sx && i <= ex);
+    ctx.fillStyle = inRegion ? 'rgba(0,229,255,0.75)' : 'rgba(0,229,255,0.12)';
+    ctx.fillRect(i, (H-barH)/2, 1, barH);
+  }
+
+  // Fade in gradient overlay
+  if(edFadeIn > 0){
+    const fiW = (edFadeIn / dur) * W;
+    const grad = ctx.createLinearGradient(sx, 0, sx+fiW, 0);
+    grad.addColorStop(0, 'rgba(123,47,255,0.5)');
+    grad.addColorStop(1, 'rgba(123,47,255,0.0)');
+    ctx.fillStyle = grad;
+    ctx.fillRect(sx, 0, fiW, H);
+    // Label
+    ctx.fillStyle = 'rgba(200,170,255,0.7)';
+    ctx.font = `${9*dpr}px Inter`;
+    ctx.fillText(`▶ ${edFadeIn.toFixed(1)}s`, sx+4, H-6);
+  }
+
+  // Fade out gradient overlay
+  if(edFadeOut > 0){
+    const foW = (edFadeOut / dur) * W;
+    const grad = ctx.createLinearGradient(ex-foW, 0, ex, 0);
+    grad.addColorStop(0, 'rgba(255,45,107,0.0)');
+    grad.addColorStop(1, 'rgba(255,45,107,0.5)');
+    ctx.fillStyle = grad;
+    ctx.fillRect(ex-foW, 0, foW, H);
+    ctx.fillStyle = 'rgba(255,160,170,0.7)';
+    ctx.font = `${9*dpr}px Inter`;
+    ctx.fillText(`${edFadeOut.toFixed(1)}s ◀`, Math.max(0, ex-foW+4), H-6);
+  }
+
+  // Trim handle — START (cyan)
+  ctx.fillStyle = '#00e5ff';
+  ctx.fillRect(sx-2*dpr, 0, 3*dpr, H);
+  ctx.beginPath();
+  ctx.moveTo(sx-2*dpr, 0);
+  ctx.lineTo(sx+10*dpr, 0);
+  ctx.lineTo(sx-2*dpr, 12*dpr);
+  ctx.closePath();
+  ctx.fill();
+
+  // Trim handle — END (cyan)
+  ctx.fillStyle = '#00e5ff';
+  ctx.fillRect(ex-1*dpr, 0, 3*dpr, H);
+  ctx.beginPath();
+  ctx.moveTo(ex+2*dpr, 0);
+  ctx.lineTo(ex-10*dpr, 0);
+  ctx.lineTo(ex+2*dpr, 12*dpr);
+  ctx.closePath();
+  ctx.fill();
+
+  // Playhead
+  if(edPlaying && edACtx){
+    const elapsed = edACtx.currentTime - edPlayStartWall;
+    const playT = edPlayOffset + elapsed;
+    if(playT >= edTrimStart && playT <= edTrimEnd){
+      const px = Math.round((playT / dur) * W);
+      ctx.fillStyle = 'rgba(255,255,255,0.9)';
+      ctx.fillRect(px-dpr, 0, 2*dpr, H);
+    }
+  }
+}
+
+function edTogglePlay(){
+  if(!edBuf) return;
+  if(edPlaying){ edStopPlay(); return; }
+
+  if(edACtx) { try{edACtx.close();}catch{} }
+  edACtx = new (window.AudioContext||window.webkitAudioContext)();
+
+  const src = edACtx.createBufferSource();
+  src.buffer = edBuf;
+
+  const gain = edACtx.createGain();
+  src.connect(gain);
+  gain.connect(edACtx.destination);
+
+  const segDur = edTrimEnd - edTrimStart;
+  const now = edACtx.currentTime;
+
+  gain.gain.setValueAtTime(0.0001, now);
+  if(edFadeIn > 0){
+    gain.gain.linearRampToValueAtTime(1, now + edFadeIn);
+  } else {
+    gain.gain.setValueAtTime(1, now + 0.01);
+  }
+  if(edFadeOut > 0 && segDur > edFadeOut){
+    gain.gain.setValueAtTime(1, now + segDur - edFadeOut);
+    gain.gain.linearRampToValueAtTime(0.0001, now + segDur);
+  }
+
+  src.start(now, edTrimStart, segDur);
+  edSrc = src;
+  edGainNode = gain;
+  edPlaying = true;
+  edPlayStartWall = edACtx.currentTime;
+  edPlayOffset = edTrimStart;
+
+  document.getElementById('edPlayBtn').textContent = '⏸';
+
+  src.onended = ()=>{
+    edPlaying = false;
+    document.getElementById('edPlayBtn').textContent = '▶';
+    cancelAnimationFrame(edRafId);
+    edDrawWave();
+  };
+
+  const loop = ()=>{ edDrawWave(); if(edPlaying) edRafId = requestAnimationFrame(loop); };
+  edRafId = requestAnimationFrame(loop);
+}
+
+function edStopPlay(){
+  if(edSrc){ try{edSrc.stop();}catch{} edSrc=null; }
+  if(edACtx){ try{edACtx.close();}catch{} edACtx=null; }
+  edPlaying = false;
+  document.getElementById('edPlayBtn').textContent = '▶';
+  cancelAnimationFrame(edRafId);
+  edDrawWave();
+}
+
+function edReset(){
+  if(!edBuf) return;
+  edTrimStart = 0; edTrimEnd = edBuf.duration;
+  edFadeIn = 0; edFadeOut = 0;
+  document.getElementById('edFiRange').value = 0;
+  document.getElementById('edFoRange').value = 0;
+  document.getElementById('edFiDisp').textContent = '0.0s';
+  document.getElementById('edFoDisp').textContent = '0.0s';
+  document.getElementById('edFiVal').textContent  = '0.0s';
+  document.getElementById('edFoVal').textContent  = '0.0s';
+  edUpdateRangeStyle(document.getElementById('edFiRange'));
+  edUpdateRangeStyle(document.getElementById('edFoRange'));
+  edUpdateLabels();
+  edDrawWave();
+}
+
+async function edApplyAndSend(){
+  if(!edFile || !edBuf) return;
+  const btn = document.getElementById('edApplyBtn');
+  btn.disabled = true;
+  const prog = document.getElementById('edApplyProgress');
+  prog.style.display = 'block';
+  document.getElementById('edApplyStatus').textContent = 'Memproses dengan FFmpeg...';
+
+  const form = new FormData();
+  form.append('file', edFile, edFile.name);
+  form.append('trimStart', edTrimStart.toFixed(3));
+  form.append('trimEnd', edTrimEnd.toFixed(3));
+  form.append('fadeIn', edFadeIn.toFixed(3));
+  form.append('fadeOut', edFadeOut.toFixed(3));
+
+  try{
+    const r = await fetch('/api/editor/process', { method:'POST', body:form });
+    if(!r.ok){ const err=await r.json(); throw new Error(err.error||'Server error'); }
+    const blob = await r.blob();
+    const fname = (r.headers.get('X-Filename') || edFile.name.replace('.mp3','_edited.mp3'));
+    const outFile = new File([blob], fname, {type:'audio/mpeg'});
+    addFiles([outFile]);
+    goPage('upload');
+    toast('✅ Berhasil! File ditambahkan ke queue upload', 'success');
+  } catch(e){
+    toast('Error: '+e.message, 'error');
+  } finally {
+    btn.disabled = false;
+    prog.style.display = 'none';
+  }
+}
+
+async function edFetchUrl(){
+  const urlInput = document.getElementById('edUrlInput');
+  const url = urlInput.value.trim();
+  if(!url){ toast('Masukkan URL terlebih dulu','error'); return; }
+
+  const btn = document.getElementById('edFetchBtn');
+  const prog = document.getElementById('edFetchProgress');
+  btn.disabled = true;
+  btn.textContent = '⏳ Mengunduh...';
+  prog.style.display = 'block';
+
+  // Animate progress bar
+  const bar = document.getElementById('edFetchBar');
+  bar.style.width = '15%';
+  const anim = setInterval(()=>{
+    const w = parseInt(bar.style.width);
+    if(w < 85) bar.style.width = (w + Math.random()*4+1) + '%';
+  }, 800);
+
+  try{
+    const r = await fetch('/api/fetch-audio', {
+      method:'POST',
+      headers:{'Content-Type':'application/json'},
+      body: JSON.stringify({url})
+    });
+    clearInterval(anim);
+    if(!r.ok){ const err=await r.json(); throw new Error(err.error||'Gagal download'); }
+
+    bar.style.width = '95%';
+    const blob = await r.blob();
+    bar.style.width = '100%';
+
+    const fname = r.headers.get('X-Filename') || 'audio.mp3';
+    const file = new File([blob], fname, {type:'audio/mpeg'});
+    urlInput.value = '';
+    edLoadFile(file);
+    toast('✅ Audio berhasil diunduh!', 'success');
+  } catch(e){
+    clearInterval(anim);
+    toast('❌ '+e.message, 'error');
+  } finally {
+    btn.disabled = false;
+    btn.textContent = '⬇️ Ambil Audio';
+    setTimeout(()=>{ prog.style.display='none'; bar.style.width='0%'; }, 1500);
+  }
+}
+
+
 async function loadHistory(){
   const container = document.getElementById('histContent');
   container.innerHTML = '<div class="empty-state"><span class="ei">⏳</span>Loading...</div>';

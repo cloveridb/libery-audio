@@ -16,6 +16,7 @@
     "better-sqlite3": "^9.4.3",
     "express-session": "^1.17.3",
     "bcryptjs": "^2.4.3",
-    "uuid": "^9.0.0"
+    "uuid": "^9.0.0",
+    "youtube-dl-exec": "^3.0.0"
   }
 }

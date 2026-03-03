@@ -5,7 +5,8 @@ const cors = require("cors");
 const FormData = require("form-data");
 const path = require("path");
 const fs = require("fs");
-const { execFile } = require("child_process");
+const { execFile, spawn } = require("child_process");
+const youtubeDl = require("youtube-dl-exec");
 const os = require("os");
 const session = require("express-session");
 const bcrypt = require("bcryptjs");
@@ -134,19 +135,21 @@ app.post("/api/auth/register", async (req, res) => {
     if (!username || !password) return res.status(400).json({ error: "Username dan password wajib diisi" });
     if (username.length < 3) return res.status(400).json({ error: "Username minimal 3 karakter" });
     if (password.length < 6) return res.status(400).json({ error: "Password minimal 6 karakter" });
+    // ── INVITE CODE WAJIB ──────────────────────────────────────
+    if (!invite_code || !invite_code.trim()) {
+      return res.status(400).json({ error: "Kode invite wajib diisi. Hubungi admin untuk mendapatkan kode." });
+    }
+    const code = db.prepare("SELECT * FROM invite_codes WHERE code = ? AND is_active = 1").get(invite_code.trim().toUpperCase());
+    if (!code) return res.status(400).json({ error: "Kode invite tidak valid atau sudah tidak aktif" });
+    if (code.max_uses > 0 && code.uses >= code.max_uses) return res.status(400).json({ error: "Kode invite sudah mencapai batas penggunaan" });
+    if (code.expires_at && new Date(code.expires_at) < new Date()) return res.status(400).json({ error: "Kode invite sudah expired" });
+    // ────────────────────────────────────────────────────────────
     const exists = db.prepare("SELECT id FROM users WHERE username = ?").get(username.toLowerCase());
     if (exists) return res.status(400).json({ error: "Username sudah digunakan" });
-    let assignedTier = "trial";
-    if (invite_code && invite_code.trim()) {
-      const code = db.prepare("SELECT * FROM invite_codes WHERE code = ? AND is_active = 1").get(invite_code.trim().toUpperCase());
-      if (!code) return res.status(400).json({ error: "Kode invite tidak valid atau sudah tidak aktif" });
-      if (code.max_uses > 0 && code.uses >= code.max_uses) return res.status(400).json({ error: "Kode invite sudah mencapai batas penggunaan" });
-      if (code.expires_at && new Date(code.expires_at) < new Date()) return res.status(400).json({ error: "Kode invite sudah expired" });
-      assignedTier = code.tier;
-      db.prepare("UPDATE invite_codes SET uses = uses + 1 WHERE id = ?").run(code.id);
-      if (code.max_uses > 0 && code.uses + 1 >= code.max_uses) {
-        db.prepare("UPDATE invite_codes SET is_active = 0 WHERE id = ?").run(code.id);
-      }
+    const assignedTier = code.tier;
+    db.prepare("UPDATE invite_codes SET uses = uses + 1 WHERE id = ?").run(code.id);
+    if (code.max_uses > 0 && code.uses + 1 >= code.max_uses) {
+      db.prepare("UPDATE invite_codes SET is_active = 0 WHERE id = ?").run(code.id);
     }
     const hash = await bcrypt.hash(password, 10);
     const userId = uuidv4();
@@ -450,7 +453,164 @@ function processAudio(inputBuffer, filename, tempo = 1.0, pitch = 0) {
   });
 }
 
-async function pollOperation(operationId, apiKey, maxAttempts = 20) {
+
+// ============================================================
+// AUDIO EDITOR PROCESSING (trim + fade)
+// ============================================================
+function processAudioEditor(inputBuffer, filename, trimStart=0, trimEnd=0, fadeIn=0, fadeOut=0) {
+  return new Promise((resolve, reject) => {
+    const tmpDir = os.tmpdir();
+    const ts = Date.now() + Math.random().toString(36).slice(2,7);
+    const inputPath = path.join(tmpDir, `ed_in_${ts}.mp3`);
+    const outputPath = path.join(tmpDir, `ed_out_${ts}.mp3`);
+    fs.writeFileSync(inputPath, inputBuffer);
+
+    const filterParts = [];
+
+    // Trim using atrim filter for sample-accurate cut
+    if (trimStart > 0 || trimEnd > 0) {
+      let trimFilter = 'atrim=';
+      if (trimStart > 0) trimFilter += `start=${trimStart.toFixed(3)}`;
+      if (trimEnd > 0) trimFilter += (trimStart > 0 ? ':' : '') + `end=${trimEnd.toFixed(3)}`;
+      filterParts.push(trimFilter);
+      filterParts.push('asetpts=PTS-STARTPTS');
+    }
+
+    // Fade in
+    if (fadeIn > 0) {
+      filterParts.push(`afade=t=in:ss=0:d=${fadeIn.toFixed(3)}`);
+    }
+
+    // Fade out (relative to trimmed audio)
+    if (fadeOut > 0) {
+      const segDur = (trimEnd > 0 ? trimEnd : 9999) - (trimStart || 0);
+      const st = Math.max(0, segDur - fadeOut);
+      filterParts.push(`afade=t=out:st=${st.toFixed(3)}:d=${fadeOut.toFixed(3)}`);
+    }
+
+    const args = ["-i", inputPath];
+    if (filterParts.length > 0) args.push("-af", filterParts.join(","));
+    args.push("-ar", "44100", "-b:a", "192k", "-y", outputPath);
+
+    log(`Editor FFmpeg args: ${args.join(" ")}`);
+
+    execFile(FFMPEG_PATH, args, { timeout: 120000 }, (err, stdout, stderr) => {
+      try { fs.unlinkSync(inputPath); } catch {}
+      if (err) {
+        log(`Editor FFmpeg error: ${stderr}`, "error");
+        try { fs.unlinkSync(outputPath); } catch {}
+        return reject(new Error("Gagal memproses audio"));
+      }
+      try {
+        const buf = fs.readFileSync(outputPath);
+        fs.unlinkSync(outputPath);
+        resolve(buf);
+      } catch (e) { reject(e); }
+    });
+  });
+}
+
+// ============================================================
+// EDITOR ROUTES
+// ============================================================
+const uploadEditor = multer({ storage: multer.memoryStorage(), limits: { fileSize: 50 * 1024 * 1024 } });
+
+app.post("/api/editor/process", requireAuth, uploadEditor.single("file"), async (req, res) => {
+  if (!req.file) return res.status(400).json({ error: "No file" });
+  const trimStart = parseFloat(req.body.trimStart) || 0;
+  const trimEnd   = parseFloat(req.body.trimEnd)   || 0;
+  const fadeIn    = parseFloat(req.body.fadeIn)    || 0;
+  const fadeOut   = parseFloat(req.body.fadeOut)   || 0;
+  try {
+    const buf = await processAudioEditor(req.file.buffer, req.file.originalname, trimStart, trimEnd, fadeIn, fadeOut);
+    const outName = req.file.originalname.replace(/\.mp3$/i, "_edited.mp3");
+    res.setHeader("Content-Type", "audio/mpeg");
+    res.setHeader("X-Filename", outName);
+    res.send(buf);
+  } catch(e) {
+    res.status(500).json({ error: e.message });
+  }
+});
+
+app.post("/api/fetch-audio", requireAuth, async (req, res) => {
+  const { url } = req.body;
+  if (!url) return res.status(400).json({ error: "URL wajib diisi" });
+
+  // Validate URL pattern for YT and SoundCloud
+  const isYT = /youtube\.com|youtu\.be/i.test(url);
+  const isSC = /soundcloud\.com/i.test(url);
+  if (!isYT && !isSC) return res.status(400).json({ error: "Hanya YouTube dan SoundCloud yang didukung" });
+
+  const tmpDir = os.tmpdir();
+  const uid = uuidv4();
+  const outTemplate = path.join(tmpDir, `xdl_${uid}.%(ext)s`);
+
+  log(`Fetching audio from: ${url}`);
+
+  try {
+    // Get title first
+    let title = "audio";
+    try {
+      const info = await youtubeDl(url, { getTitle: true, noPlaylist: true, dumpSingleJson: false });
+      if (typeof info === "string") title = info.replace(/[^\w\s\-]/g, "").trim().slice(0, 60) || "audio";
+    } catch {}
+
+    // Download as mp3 using youtube-dl-exec
+    await youtubeDl(url, {
+      extractAudio: true,
+      audioFormat: "mp3",
+      audioQuality: 5,
+      noPlaylist: true,
+      maxFilesize: "50m",
+      output: outTemplate,
+    });
+
+    // Find output file
+    const mp3Path = outTemplate.replace("%(ext)s", "mp3");
+    if (!fs.existsSync(mp3Path)) {
+      // Search for any downloaded file with our uid
+      const files = fs.readdirSync(tmpDir).filter(f => f.startsWith(`xdl_${uid}`));
+      if (!files.length) throw new Error("File tidak ditemukan setelah download");
+      const fullPath = path.join(tmpDir, files[0]);
+      // Convert to mp3 if not already
+      if (!files[0].endsWith(".mp3")) {
+        const mp3Out = path.join(tmpDir, `xdl_${uid}_conv.mp3`);
+        await new Promise((resolve, reject) => {
+          execFile(FFMPEG_PATH, ["-i", fullPath, "-b:a", "192k", "-y", mp3Out], { timeout: 120000 }, (err) => {
+            try { fs.unlinkSync(fullPath); } catch {}
+            if (err) reject(err); else resolve();
+          });
+        });
+        const buf = fs.readFileSync(mp3Out);
+        fs.unlinkSync(mp3Out);
+        const fname = `${title}.mp3`;
+        res.setHeader("Content-Type", "audio/mpeg");
+        res.setHeader("Content-Disposition", `attachment; filename="${fname}"`);
+        res.setHeader("X-Filename", fname);
+        return res.send(buf);
+      }
+    }
+
+    const buf = fs.readFileSync(mp3Path);
+    try { fs.unlinkSync(mp3Path); } catch {}
+    const fname = `${title}.mp3`;
+    res.setHeader("Content-Type", "audio/mpeg");
+    res.setHeader("Content-Disposition", `attachment; filename="${fname}"`);
+    res.setHeader("X-Filename", fname);
+    res.send(buf);
+
+  } catch(e) {
+    log("fetch-audio error: " + e.message, "error");
+    // Cleanup
+    try {
+      const files = fs.readdirSync(tmpDir).filter(f => f.startsWith(`xdl_${uid}`));
+      files.forEach(f => { try { fs.unlinkSync(path.join(tmpDir, f)); } catch {} });
+    } catch {}
+    res.status(500).json({ error: "Gagal mengambil audio. Pastikan URL valid dan coba lagi. (" + e.message.slice(0,100) + ")" });
+  }
+});
+
+(operationId, apiKey, maxAttempts = 20) {
   for (let i = 0; i < maxAttempts; i++) {
     await new Promise(r => setTimeout(r, 3000));
     try {

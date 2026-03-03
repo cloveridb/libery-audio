@@ -543,10 +543,10 @@ footer{position:relative;z-index:1;border-top:1px solid var(--border);padding:40
       <div class="fg"><label>Username</label><input type="text" id="regUser" placeholder="min 3 karakter"/></div>
       <div class="fg"><label>Password</label><input type="password" id="regPass" placeholder="min 6 karakter"/></div>
       <div class="fg"><label>Email (opsional)</label><input type="email" id="regEmail" placeholder="email@kamu.com"/></div>
-      <div class="fg"><label>Kode Invite (opsional)</label><input type="text" id="regCode" placeholder="XELLO-XXXXXX" style="text-transform:uppercase;letter-spacing:2px" onkeydown="if(event.key==='Enter')doRegister()"/></div>
+      <div class="fg"><label>Kode Invite <span style="color:#ff2d6b">*</span></label><input type="text" id="regCode" placeholder="XELLO-XXXXXX — wajib diisi" style="text-transform:uppercase;letter-spacing:2px;border-color:rgba(0,229,255,0.25)" onkeydown="if(event.key==='Enter')doRegister()"/></div>
       <button class="form-submit" onclick="doRegister()">DAFTAR SEKARANG →</button>
       <div class="form-msg" id="registerMsg"></div>
-      <div class="invite-note">Punya kode invite? Masukkan untuk <span>upgrade tier otomatis!</span></div>
+      <div class="invite-note">Belum punya kode? <span>Hubungi admin untuk mendapatkan akses.</span></div>
     </div>
   </div>
 </div>
@@ -583,6 +583,7 @@ async function doRegister(){
   const email=document.getElementById('regEmail').value.trim();
   const invite_code=document.getElementById('regCode').value.trim();
   if(!username||!password){showMsg('registerMsg','Username dan password wajib!','error');return;}
+  if(!invite_code){showMsg('registerMsg','Kode invite wajib diisi!','error');return;}
   showMsg('registerMsg','Memproses...','');
   try{
     const r=await fetch('/api/auth/register',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({username,password,email,invite_code})});
