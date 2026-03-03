@@ -85,8 +85,6 @@ body.sb-open .main{pointer-events:none;user-select:none}
 .fi-list{margin-top:12px;display:flex;flex-direction:column;gap:6px}
 .fi-item{display:flex;align-items:center;gap:8px;padding:8px 12px;background:var(--bg3);border-radius:8px;font-size:12px}
 .fi-name{flex:1;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
-.fi-title{flex:1 0 150px;background:rgba(0,229,255,0.03);border:1px solid rgba(0,229,255,0.12);border-radius:6px;padding:4px 8px;font-size:12px;color:#c8dff0;margin:0 6px;outline:none;transition:all .3s}
-.fi-title:focus{border-color:rgba(0,229,255,0.4);background:rgba(0,229,255,0.05);}
 .fi-size{color:rgba(200,223,240,0.3);font-family:'Space Mono',monospace;font-size:10px}
 .fi-status{font-size:14px;width:20px;text-align:center}
 .slider-row{display:flex;align-items:center;gap:12px;margin-bottom:12px}
@@ -187,7 +185,7 @@ input[type=range]{flex:1;accent-color:var(--c)}
       <a onclick="goPage('history')" id="nav-history"><span class="icon">📋</span>Upload History</a>
     </nav>
     <div class="sb-logout">
-      <button onclick="doLogout()">LOGOUT</button>
+      <button onclick="doLogout()">⏻ LOGOUT</button>
     </div>
   </aside>
 
@@ -350,9 +348,7 @@ input[type=range]{flex:1;accent-color:var(--c)}
 <div class="toast" id="toast"></div>
 
 <script>
-let selectedUserId=null, selectedTier=null;
-// adminFiles holds objects { file: File, title: string }
-let adminFiles=[];
+let selectedUserId=null, selectedTier=null, adminFiles=[];
 
 // Responsive sidebar
 function toggleSidebar(){
@@ -500,40 +496,20 @@ async function saveAdminRoblox(){
 // Admin Upload
 function adDrop(e){e.preventDefault();document.getElementById('adDrop').classList.remove('drag');setAdminFiles(e.dataTransfer.files);}
 function setAdminFiles(files){
-  adminFiles = Array.from(files).map(f => ({ file: f, title: '' }));
+  adminFiles=Array.from(files);
   const list=document.getElementById('adFileList');
-  if(!adminFiles.length){
-    list.innerHTML='';
-    document.getElementById('adUpBtn').disabled=true;
-    return;
-  }
+  if(!adminFiles.length){list.innerHTML='';document.getElementById('adUpBtn').disabled=true;return;}
   document.getElementById('adUpBtn').disabled=false;
-  list.innerHTML=adminFiles.map((entry,i)=>{
-    const f = entry.file;
-    return `<div class="fi-item" id="adfi-${i}">
-              <span class="fi-status" id="adfs-${i}">🎵</span>
-              <span class="fi-name">${f.name}</span>
-              <input type="text" class="fi-title" placeholder="Judul lagu" value="" oninput="adminFiles[${i}].title=this.value" />
-              <span class="fi-size">${(f.size/1024/1024).toFixed(2)}MB</span>
-            </div>`;
-  }).join('');
+  list.innerHTML=adminFiles.map((f,i)=>`<div class="fi-item" id="adfi-${i}"><span class="fi-status" id="adfs-${i}">🎵</span><span class="fi-name">${f.name}</span><span class="fi-size">${(f.size/1024/1024).toFixed(2)}MB</span></div>`).join('');
 }
 async function startAdminUpload(){
   if(!adminFiles.length)return;
-  // require titles
-  for(const entry of adminFiles){
-    if(!entry.title||!entry.title.trim()){
-      toast('Tolong isi judul untuk semua lagu','error');
-      return;
-    }
-  }
   const btn=document.getElementById('adUpBtn');btn.disabled=true;
   const prog=document.getElementById('adProg');prog.style.display='block';
   document.getElementById('adResults').innerHTML='';
   adminFiles.forEach((_,i)=>{const s=document.getElementById('adfs-'+i);if(s){s.textContent='⏳';s.style.color='#ff9800';}});
   const fd=new FormData();
-  adminFiles.forEach(entry=>fd.append('files',entry.file));
-  adminFiles.forEach(entry=>fd.append('titles[]', entry.title));
+  adminFiles.forEach(f=>fd.append('files',f));
   fd.append('processTempo',document.getElementById('adTempoToggle').checked);
   fd.append('tempoMultiplier',(document.getElementById('adTempoRange').value/10).toFixed(1));
   fd.append('pitchShift',document.getElementById('adPitchRange').value);
