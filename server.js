@@ -283,6 +283,99 @@ app.get("/api/admin/history", requireAdmin, (req, res) => {
   res.json(history);
 });
 
+// Admin Roblox settings (simpan di env runtime / memory session)
+app.get("/api/admin/roblox-settings", requireAdmin, (req, res) => {
+  res.json({
+    creator_type: req.session.adminCreatorType || process.env.ADMIN_CREATOR_TYPE || "user",
+    roblox_user_id: req.session.adminUserId || process.env.ADMIN_ROBLOX_USER_ID || "",
+    roblox_group_id: req.session.adminGroupId || process.env.ADMIN_ROBLOX_GROUP_ID || "",
+    has_api_key: !!(req.session.adminApiKey || process.env.ADMIN_ROBLOX_API_KEY)
+  });
+});
+
+app.post("/api/admin/roblox-settings", requireAdmin, (req, res) => {
+  const { creator_type, roblox_user_id, roblox_api_key, roblox_group_id, roblox_group_api_key } = req.body;
+  req.session.adminCreatorType = creator_type || "user";
+  req.session.adminUserId = roblox_user_id || "";
+  req.session.adminGroupId = roblox_group_id || "";
+  if (roblox_api_key && roblox_api_key.trim()) req.session.adminApiKey = roblox_api_key.trim();
+  if (roblox_group_api_key && roblox_group_api_key.trim()) req.session.adminGroupApiKey = roblox_group_api_key.trim();
+  res.json({ success: true, message: "Roblox settings admin tersimpan!" });
+});
+
+// Admin upload route
+const adminUpload = multer({ storage: multer.memoryStorage(), limits: { fileSize: 20 * 1024 * 1024 } });
+app.post("/api/admin/upload", requireAdmin, adminUpload.array("files"), async (req, res) => {
+  const creatorType = req.session.adminCreatorType || process.env.ADMIN_CREATOR_TYPE || "user";
+  const apiKey = creatorType === "group"
+    ? (req.session.adminGroupApiKey || process.env.ADMIN_ROBLOX_GROUP_API_KEY)
+    : (req.session.adminApiKey || process.env.ADMIN_ROBLOX_API_KEY);
+  const userId = req.session.adminUserId || process.env.ADMIN_ROBLOX_USER_ID;
+  const groupId = req.session.adminGroupId || process.env.ADMIN_ROBLOX_GROUP_ID;
+
+  if (!apiKey) return res.status(400).json({ error: "Belum ada API Key Roblox admin. Atur di Settings Upload." });
+  if (!req.files?.length) return res.status(400).json({ error: "Tidak ada file." });
+
+  const processTempo = req.body.processTempo === "true";
+  const tempoMultiplier = parseFloat(req.body.tempoMultiplier) || 1.0;
+  const pitchShift = parseFloat(req.body.pitchShift) || 0;
+  const results = [];
+
+  for (const file of req.files) {
+    log(`Admin upload: ${file.originalname}`);
+    let fileBuffer = file.buffer;
+    const needsProcess = processTempo || pitchShift !== 0;
+    if (needsProcess) {
+      try {
+        fileBuffer = await processAudio(file.buffer, file.originalname, processTempo ? tempoMultiplier : 1.0, pitchShift);
+      } catch (e) { log(`FFmpeg error: ${e.message}`, "warn"); }
+    }
+
+    const histEntry = { filename: file.originalname, status: "FAILED", asset_id: null, error_msg: null };
+    let success = false;
+    for (let attempt = 1; attempt <= 3 && !success; attempt++) {
+      try {
+        const displayName = path.basename(file.originalname, path.extname(file.originalname));
+        const creatorField = creatorType === "group"
+          ? { groupId: parseInt(groupId) }
+          : { userId: parseInt(userId) };
+        const metadata = {
+          assetType: "Audio", displayName,
+          description: "Uploaded via XELLO Studio (Admin)",
+          creationContext: { creator: creatorField }
+        };
+        const form = new FormData();
+        form.append("request", JSON.stringify(metadata));
+        form.append("fileContent", fileBuffer, { filename: file.originalname, contentType: "audio/mpeg" });
+        const response = await axios.post("https://apis.roblox.com/assets/v1/assets", form, {
+          headers: { "x-api-key": apiKey, ...form.getHeaders() },
+          maxBodyLength: Infinity, maxContentLength: Infinity
+        });
+        let { assetId, operationId } = response.data;
+        if (operationId && !assetId) {
+          const poll = await pollOperation(operationId, apiKey);
+          if (poll.success) assetId = poll.assetId;
+          else throw new Error(JSON.stringify(poll.error));
+        }
+        histEntry.status = "SUCCESS";
+        histEntry.asset_id = assetId;
+        success = true;
+        log(`Admin upload success: ${file.originalname} → ${assetId}`, "success");
+      } catch (e) {
+        histEntry.error_msg = e.response?.data ? JSON.stringify(e.response.data) : e.message;
+        log(`Admin upload attempt ${attempt} failed: ${histEntry.error_msg}`, "error");
+        if (e.response?.status === 429) await new Promise(r => setTimeout(r, 10000));
+        else if (attempt < 3) await new Promise(r => setTimeout(r, 2000));
+      }
+    }
+    results.push({ ...histEntry, file: file.originalname });
+    await new Promise(r => setTimeout(r, 1000));
+  }
+
+  const sukses = results.filter(r => r.status === "SUCCESS").length;
+  res.json({ total: req.files.length, success: sukses, results });
+});
+
 // ============================================================
 // AUDIO PROCESSING - FIXED
 // ============================================================

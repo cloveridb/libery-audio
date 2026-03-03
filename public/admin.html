@@ -10,8 +10,6 @@
 *{box-sizing:border-box;margin:0;padding:0}
 body{font-family:'Inter',sans-serif;background:var(--bg);color:#c8dff0;min-height:100vh}
 body::before{content:'';position:fixed;inset:0;background-image:linear-gradient(rgba(0,229,255,0.015) 1px,transparent 1px),linear-gradient(90deg,rgba(0,229,255,0.015) 1px,transparent 1px);background-size:50px 50px;pointer-events:none}
-
-/* LOGIN */
 #loginPage{position:fixed;inset:0;display:flex;align-items:center;justify-content:center;z-index:100;background:var(--bg)}
 .login-box{width:100%;max-width:360px;padding:20px}
 .login-logo{font-family:'Orbitron',sans-serif;font-size:16px;font-weight:900;color:var(--c);letter-spacing:4px;text-align:center;margin-bottom:6px;text-shadow:0 0 20px var(--c)}
@@ -22,66 +20,54 @@ body::before{content:'';position:fixed;inset:0;background-image:linear-gradient(
 .lg input:focus{border-color:rgba(0,229,255,0.4);background:rgba(0,229,255,0.05)}
 .lg button{width:100%;padding:12px;background:linear-gradient(135deg,var(--c),var(--c2));color:#04080f;font-family:'Orbitron',sans-serif;font-size:12px;font-weight:700;letter-spacing:2px;border:none;border-radius:8px;cursor:pointer}
 .lg-err{font-size:12px;text-align:center;color:#ff5c7b;margin-top:10px}
-
-/* LAYOUT */
-#mainApp{display:none;position:relative;z-index:1}
+#mainApp{display:none;position:relative}
 .layout{display:flex;min-height:100vh}
-.sidebar{width:210px;background:rgba(8,15,28,0.98);border-right:1px solid var(--border);display:flex;flex-direction:column;position:fixed;left:0;top:0;bottom:0;z-index:50;backdrop-filter:blur(20px)}
+.hamburger{display:none;position:fixed;top:12px;left:12px;z-index:110;background:var(--bg2);border:1px solid var(--border);border-radius:8px;padding:8px 11px;cursor:pointer;font-size:18px;line-height:1;color:#c8dff0}
+.overlay{display:none;position:fixed;inset:0;background:rgba(0,0,0,0.75);z-index:98;backdrop-filter:blur(2px)}
+.overlay.show{display:block}
+body.sb-open{overflow:hidden}
+body.sb-open .main{pointer-events:none;user-select:none}
+.sidebar{width:210px;background:rgba(8,15,28,0.98);border-right:1px solid var(--border);display:flex;flex-direction:column;position:fixed;left:0;top:0;bottom:0;z-index:100;backdrop-filter:blur(20px);transition:transform .3s}
 .sb-logo{padding:18px;border-bottom:1px solid var(--border)}
 .sb-logo-t{font-family:'Orbitron',sans-serif;font-size:12px;font-weight:900;color:var(--c);letter-spacing:3px}
 .sb-logo-s{font-size:9px;color:rgba(200,223,240,0.2);letter-spacing:2px;margin-top:3px}
 .sb-admin-badge{margin:12px;background:rgba(255,45,107,0.1);border:1px solid rgba(255,45,107,0.25);border-radius:8px;padding:8px 12px;font-size:10px;color:#ff5c7b;font-family:'Orbitron',sans-serif;letter-spacing:1px;text-align:center}
-.sb-nav{flex:1;padding:8px}
+.sb-nav{flex:1;padding:8px;overflow-y:auto}
 .sb-nav a{display:flex;align-items:center;gap:10px;padding:10px;border-radius:8px;color:rgba(200,223,240,0.4);text-decoration:none;font-size:12px;transition:all .2s;cursor:pointer;border:none;background:none;width:100%;font-family:'Inter',sans-serif;margin-bottom:2px}
 .sb-nav a:hover{color:rgba(200,223,240,0.9);background:rgba(255,255,255,0.04)}
 .sb-nav a.active{color:var(--c);background:rgba(0,229,255,0.08);border:1px solid rgba(0,229,255,0.15)}
 .sb-nav a .icon{font-size:15px;width:20px;text-align:center}
 .sb-logout{padding:12px;border-top:1px solid var(--border)}
 .sb-logout button{width:100%;padding:8px;background:rgba(255,45,107,0.08);border:1px solid rgba(255,45,107,0.2);border-radius:7px;color:rgba(255,93,130,0.7);font-size:11px;font-family:'Orbitron',sans-serif;letter-spacing:1px;cursor:pointer}
-
 .main{margin-left:210px;flex:1;padding:24px}
 .page-section{display:none}
 .page-section.active{display:block}
 .page-title{font-family:'Orbitron',sans-serif;font-size:18px;font-weight:900;color:#fff;letter-spacing:2px;margin-bottom:4px}
 .page-sub{font-size:12px;color:rgba(200,223,240,0.35);margin-bottom:20px}
-
-/* CARDS */
 .card{background:var(--bg2);border:1px solid var(--border);border-radius:14px;padding:20px;margin-bottom:16px}
 .card-title{font-family:'Orbitron',sans-serif;font-size:10px;font-weight:700;letter-spacing:3px;color:rgba(200,223,240,0.3);text-transform:uppercase;margin-bottom:16px;display:flex;align-items:center;gap:8px}
 .card-title span{color:var(--c)}
-
-/* STATS */
-.stats-row{display:grid;grid-template-columns:repeat(auto-fit,minmax(160px,1fr));gap:14px;margin-bottom:20px}
+.stats-row{display:grid;grid-template-columns:repeat(auto-fit,minmax(140px,1fr));gap:14px;margin-bottom:20px}
 .stat-card{background:var(--bg2);border:1px solid var(--border);border-radius:12px;padding:18px;text-align:center}
 .stat-num{font-family:'Orbitron',sans-serif;font-size:28px;font-weight:900;color:var(--c)}
 .stat-lbl{font-size:10px;letter-spacing:2px;color:rgba(200,223,240,0.3);text-transform:uppercase;margin-top:4px}
-
-/* TABLE */
 .data-table{width:100%;border-collapse:collapse}
 .data-table th{font-size:9px;letter-spacing:2px;color:rgba(200,223,240,0.25);text-transform:uppercase;padding:8px 12px;text-align:left;border-bottom:1px solid rgba(255,255,255,0.04)}
 .data-table td{padding:10px 12px;font-size:12px;border-bottom:1px solid rgba(255,255,255,0.03);vertical-align:middle}
 .data-table tr:hover td{background:rgba(255,255,255,0.02)}
-
-/* TIER BADGE */
 .tier-badge{font-size:10px;padding:3px 8px;border-radius:10px;font-family:'Space Mono',monospace;font-weight:700}
 .tier-trial{background:rgba(255,152,0,0.15);color:#ff9800;border:1px solid rgba(255,152,0,0.3)}
 .tier-beginner{background:rgba(33,150,243,0.15);color:#4fc3f7;border:1px solid rgba(33,150,243,0.3)}
 .tier-pro{background:rgba(0,229,255,0.12);color:var(--c);border:1px solid rgba(0,229,255,0.3)}
 .status-on{color:var(--g);font-size:12px}
 .status-off{color:var(--c3);font-size:12px}
-
-/* BUTTONS */
 .btn-sm{padding:4px 10px;border-radius:5px;font-size:10px;cursor:pointer;font-family:'Space Mono',monospace;transition:all .2s;border:1px solid}
 .btn-cyan{background:rgba(0,229,255,0.08);border-color:rgba(0,229,255,0.25);color:var(--c)}
 .btn-cyan:hover{background:rgba(0,229,255,0.15)}
 .btn-red{background:rgba(255,45,107,0.08);border-color:rgba(255,45,107,0.25);color:var(--c3)}
 .btn-red:hover{background:rgba(255,45,107,0.15)}
 .btn-green{background:rgba(0,229,160,0.08);border-color:rgba(0,229,160,0.25);color:var(--g)}
-.btn-green:hover{background:rgba(0,229,160,0.15)}
 .btn-orange{background:rgba(255,152,0,0.08);border-color:rgba(255,152,0,0.25);color:#ff9800}
-.btn-orange:hover{background:rgba(255,152,0,0.15)}
-
-/* FORMS */
 .form-row{display:flex;gap:10px;align-items:flex-end;flex-wrap:wrap;margin-bottom:16px}
 .form-group{flex:1;min-width:120px}
 .form-group label{display:block;font-size:9px;letter-spacing:2px;color:rgba(200,223,240,0.3);text-transform:uppercase;margin-bottom:6px}
@@ -89,14 +75,42 @@ body::before{content:'';position:fixed;inset:0;background-image:linear-gradient(
 .form-group input:focus,.form-group select:focus{border-color:rgba(0,229,255,0.4)}
 .form-group select option{background:#0c1525}
 .action-btn{padding:10px 18px;background:linear-gradient(135deg,var(--c),var(--c2));color:#04080f;font-family:'Orbitron',sans-serif;font-size:10px;font-weight:700;letter-spacing:2px;border:none;border-radius:8px;cursor:pointer;white-space:nowrap;flex-shrink:0}
-
-/* INVITE CODES */
 .code-badge{font-family:'Space Mono',monospace;font-size:13px;color:var(--c);letter-spacing:3px;background:rgba(0,229,255,0.05);padding:4px 10px;border-radius:5px;border:1px solid rgba(0,229,255,0.15)}
-
-/* TIER MODAL */
+/* UPLOAD */
+.upload-drop{border:2px dashed rgba(0,229,255,0.2);border-radius:12px;padding:30px;text-align:center;cursor:pointer;transition:all .3s;background:rgba(0,229,255,0.02);margin-bottom:14px}
+.upload-drop:hover,.upload-drop.drag{border-color:var(--c);background:rgba(0,229,255,0.05)}
+.upload-drop-icon{font-size:32px;margin-bottom:8px}
+.upload-drop-text{font-size:13px;color:rgba(200,223,240,0.5)}
+.upload-drop-text span{color:var(--c)}
+.fi-list{margin-top:12px;display:flex;flex-direction:column;gap:6px}
+.fi-item{display:flex;align-items:center;gap:8px;padding:8px 12px;background:var(--bg3);border-radius:8px;font-size:12px}
+.fi-name{flex:1;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.fi-size{color:rgba(200,223,240,0.3);font-family:'Space Mono',monospace;font-size:10px}
+.fi-status{font-size:14px;width:20px;text-align:center}
+.slider-row{display:flex;align-items:center;gap:12px;margin-bottom:12px}
+.slider-label{font-size:10px;letter-spacing:2px;color:rgba(200,223,240,0.3);text-transform:uppercase;min-width:100px;font-family:'Space Mono',monospace}
+.slider-val{font-family:'Space Mono',monospace;font-size:12px;color:var(--c);min-width:45px;text-align:right}
+input[type=range]{flex:1;accent-color:var(--c)}
+.toggle-row{display:flex;align-items:center;gap:10px;margin-bottom:12px}
+.toggle-lbl{font-size:12px;color:rgba(200,223,240,0.5)}
+.toggle-switch{position:relative;width:42px;height:22px;flex-shrink:0}
+.toggle-switch input{opacity:0;width:0;height:0;position:absolute;pointer-events:none}
+.toggle-slider{position:absolute;inset:0;background:rgba(255,255,255,0.1);border-radius:22px;cursor:pointer;transition:.3s}
+.toggle-slider:before{content:'';position:absolute;height:16px;width:16px;left:3px;bottom:3px;background:#fff;border-radius:50%;transition:.3s}
+.toggle-switch input:checked+.toggle-slider{background:var(--c)}
+.toggle-switch input:checked+.toggle-slider:before{transform:translateX(20px)}
+.upload-btn{width:100%;padding:13px;background:linear-gradient(135deg,var(--c),var(--c2));color:#04080f;font-family:'Orbitron',sans-serif;font-size:12px;font-weight:700;letter-spacing:2px;border:none;border-radius:10px;cursor:pointer;transition:all .3s;margin-top:14px}
+.upload-btn:disabled{opacity:.4;cursor:not-allowed}
+.up-bar-wrap{background:rgba(255,255,255,0.05);border-radius:10px;height:4px;margin:8px 0}
+.up-bar{height:4px;background:linear-gradient(90deg,var(--c),var(--c2));border-radius:10px;transition:width .5s}
+.up-status{font-size:12px;color:rgba(200,223,240,0.5);font-family:'Space Mono',monospace}
+.result-item{display:flex;align-items:center;gap:8px;padding:8px 12px;border-radius:8px;margin-top:6px;font-size:12px;flex-wrap:wrap}
+.result-ok{background:rgba(0,229,160,0.06);border:1px solid rgba(0,229,160,0.15)}
+.result-fail{background:rgba(255,45,107,0.06);border:1px solid rgba(255,45,107,0.15)}
+/* MODAL */
 .modal-bg{display:none;position:fixed;inset:0;background:rgba(4,8,15,0.92);backdrop-filter:blur(12px);z-index:200;align-items:center;justify-content:center}
 .modal-bg.show{display:flex}
-.modal{background:var(--bg2);border:1px solid var(--border);border-radius:16px;padding:28px;width:100%;max-width:340px}
+.modal{background:var(--bg2);border:1px solid var(--border);border-radius:16px;padding:28px;width:100%;max-width:340px;margin:16px}
 .modal h3{font-family:'Orbitron',sans-serif;font-size:14px;color:var(--c);letter-spacing:2px;margin-bottom:20px}
 .modal-btns{display:flex;flex-direction:column;gap:8px}
 .tier-option{padding:12px 16px;border-radius:8px;cursor:pointer;display:flex;align-items:center;gap:10px;border:1px solid rgba(255,255,255,0.06);background:var(--bg3);transition:all .2s;font-size:13px}
@@ -106,20 +120,38 @@ body::before{content:'';position:fixed;inset:0;background-image:linear-gradient(
 .modal-footer button{flex:1;padding:10px;border-radius:8px;font-family:'Orbitron',sans-serif;font-size:10px;letter-spacing:1px;cursor:pointer;border:1px solid}
 .modal-cancel{background:transparent;border-color:rgba(255,255,255,0.1);color:rgba(200,223,240,0.4)}
 .modal-save{background:linear-gradient(135deg,var(--c),var(--c2));border-color:transparent;color:#04080f;font-weight:700}
-
 /* TOAST */
 .toast{position:fixed;bottom:24px;right:24px;background:var(--bg3);border:1px solid var(--border);border-radius:10px;padding:12px 18px;font-size:12px;color:#c8dff0;box-shadow:0 8px 30px rgba(0,0,0,0.5);z-index:1000;transform:translateX(120%);transition:transform .3s}
 .toast.show{transform:translateX(0)}
 .toast.success{border-color:rgba(0,229,160,0.3);color:var(--g)}
 .toast.error{border-color:rgba(255,45,107,0.3);color:var(--c3)}
-
 .empty-state{text-align:center;padding:40px;color:rgba(200,223,240,0.2);font-size:13px}
 .empty-state .ei{font-size:32px;display:block;margin-bottom:8px}
+/* RESPONSIVE */
+@media(max-width:768px){
+  .hamburger{display:block}
+  .sidebar{transform:translateX(-100%)}
+  .sidebar.open{transform:translateX(0)}
+  .main{margin-left:0;padding:16px;padding-top:60px}
+  .page-title{font-size:14px}
+  .stats-row{grid-template-columns:1fr 1fr}
+  .form-row{flex-direction:column}
+  .form-group{min-width:100%}
+  .data-table th,.data-table td{padding:7px 8px;font-size:11px}
+  .toast{left:16px;right:16px;bottom:16px;transform:translateY(120%)}
+  .toast.show{transform:translateY(0)}
+}
+@media(max-width:480px){
+  .stat-num{font-size:22px}
+  .stats-row{grid-template-columns:1fr 1fr}
+}
 </style>
 </head>
 <body>
 
-<!-- LOGIN -->
+<button class="hamburger" id="hamburgerBtn" onclick="toggleSidebar()">☰</button>
+<div class="overlay" id="overlay" onclick="closeSidebar()"></div>
+
 <div id="loginPage">
   <div class="login-box">
     <div class="login-logo">⚡ XELLO ADMIN</div>
@@ -137,11 +169,9 @@ body::before{content:'';position:fixed;inset:0;background-image:linear-gradient(
   </div>
 </div>
 
-<!-- MAIN -->
 <div id="mainApp">
 <div class="layout">
-  <!-- SIDEBAR -->
-  <aside class="sidebar">
+  <aside class="sidebar" id="sidebar">
     <div class="sb-logo">
       <div class="sb-logo-t">XELLO</div>
       <div class="sb-logo-s">ADMIN PANEL</div>
@@ -151,6 +181,7 @@ body::before{content:'';position:fixed;inset:0;background-image:linear-gradient(
       <a class="active" onclick="goPage('overview')" id="nav-overview"><span class="icon">📊</span>Overview</a>
       <a onclick="goPage('users')" id="nav-users"><span class="icon">👥</span>Manajemen User</a>
       <a onclick="goPage('invites')" id="nav-invites"><span class="icon">🎫</span>Invite Codes</a>
+      <a onclick="goPage('upload')" id="nav-upload"><span class="icon">🚀</span>Upload Audio</a>
       <a onclick="goPage('history')" id="nav-history"><span class="icon">📋</span>Upload History</a>
     </nav>
     <div class="sb-logout">
@@ -158,14 +189,13 @@ body::before{content:'';position:fixed;inset:0;background-image:linear-gradient(
     </div>
   </aside>
 
-  <!-- CONTENT -->
   <main class="main">
 
     <!-- OVERVIEW -->
     <div class="page-section active" id="page-overview">
       <div class="page-title">Overview</div>
       <div class="page-sub">Statistik platform XELLO Studio</div>
-      <div class="stats-row" id="statsRow">
+      <div class="stats-row">
         <div class="stat-card"><div class="stat-num" id="st-total">—</div><div class="stat-lbl">Total User</div></div>
         <div class="stat-card"><div class="stat-num" id="st-trial" style="color:#ff9800">—</div><div class="stat-lbl">Trial</div></div>
         <div class="stat-card"><div class="stat-num" id="st-beginner" style="color:#4fc3f7">—</div><div class="stat-lbl">Beginner</div></div>
@@ -187,9 +217,7 @@ body::before{content:'';position:fixed;inset:0;background-image:linear-gradient(
           <div class="card-title" style="margin:0"><span>◈</span> DAFTAR USER</div>
           <button onclick="loadUsers()" class="btn-sm btn-cyan">↻ REFRESH</button>
         </div>
-        <div style="overflow-x:auto" id="usersContainer">
-          <div class="empty-state">Loading...</div>
-        </div>
+        <div style="overflow-x:auto" id="usersContainer"><div class="empty-state">Loading...</div></div>
       </div>
     </div>
 
@@ -200,27 +228,11 @@ body::before{content:'';position:fixed;inset:0;background-image:linear-gradient(
       <div class="card">
         <div class="card-title"><span>◈</span> BUAT KODE BARU</div>
         <div class="form-row">
-          <div class="form-group">
-            <label>Custom Code (kosongkan = auto)</label>
-            <input type="text" id="newCode" placeholder="XELLO-CUSTOM" style="text-transform:uppercase;letter-spacing:2px;font-family:Space Mono"/>
-          </div>
-          <div class="form-group">
-            <label>Tier</label>
-            <select id="newTier">
-              <option value="trial">Trial (3/bulan)</option>
-              <option value="beginner" selected>Beginner (50/bulan)</option>
-              <option value="pro">Pro (Unlimited)</option>
-            </select>
-          </div>
-          <div class="form-group">
-            <label>Max Uses (0 = unlimited)</label>
-            <input type="number" id="newMaxUses" value="1" min="0"/>
-          </div>
-          <div class="form-group">
-            <label>Expires (kosongkan = no expiry)</label>
-            <input type="date" id="newExpires"/>
-          </div>
-          <button class="action-btn" onclick="createInvite()">+ BUAT KODE</button>
+          <div class="form-group"><label>Custom Code (kosong = auto)</label><input type="text" id="newCode" placeholder="XELLO-CUSTOM" style="text-transform:uppercase;letter-spacing:2px;font-family:Space Mono"/></div>
+          <div class="form-group"><label>Tier</label><select id="newTier"><option value="trial">Trial (3/bln)</option><option value="beginner" selected>Beginner (50/bln)</option><option value="pro">Pro (Unlimited)</option></select></div>
+          <div class="form-group"><label>Max Uses (0=∞)</label><input type="number" id="newMaxUses" value="1" min="0"/></div>
+          <div class="form-group"><label>Expires (kosong=∞)</label><input type="date" id="newExpires"/></div>
+          <button class="action-btn" onclick="createInvite()">+ BUAT</button>
         </div>
       </div>
       <div class="card">
@@ -228,8 +240,74 @@ body::before{content:'';position:fixed;inset:0;background-image:linear-gradient(
           <div class="card-title" style="margin:0"><span>◈</span> SEMUA KODE</div>
           <button onclick="loadInvites()" class="btn-sm btn-cyan">↻ REFRESH</button>
         </div>
-        <div style="overflow-x:auto" id="invitesContainer">
-          <div class="empty-state">Loading...</div>
+        <div style="overflow-x:auto" id="invitesContainer"><div class="empty-state">Loading...</div></div>
+      </div>
+    </div>
+
+    <!-- UPLOAD AUDIO ADMIN -->
+    <div class="page-section" id="page-upload">
+      <div class="page-title">Upload Audio</div>
+      <div class="page-sub">Upload langsung ke Roblox sebagai Admin</div>
+
+      <div class="card">
+        <div class="card-title"><span>◈</span> ROBLOX SETTINGS ADMIN</div>
+        <div class="form-row">
+          <div class="form-group">
+            <label>Creator Type</label>
+            <select id="adCreatorType" onchange="toggleGroupFields()">
+              <option value="user">Personal Account</option>
+              <option value="group">Group Account</option>
+            </select>
+          </div>
+          <div class="form-group"><label>Roblox User ID</label><input type="text" id="adUserId" placeholder="1234567"/></div>
+          <div class="form-group"><label>API Key</label><input type="password" id="adApiKey" placeholder="rblx_xxxx..."/></div>
+        </div>
+        <div id="adGroupFields" style="display:none">
+          <div class="form-row">
+            <div class="form-group"><label>Group ID</label><input type="text" id="adGroupId" placeholder="12345678"/></div>
+            <div class="form-group"><label>Group API Key</label><input type="password" id="adGroupApiKey" placeholder="rblx_xxxx..."/></div>
+          </div>
+        </div>
+        <div style="display:flex;align-items:center;gap:12px;flex-wrap:wrap">
+          <button class="action-btn" onclick="saveAdminRoblox()">💾 SIMPAN SETTINGS</button>
+          <span id="adSettingStatus" style="font-size:11px;color:var(--g)"></span>
+        </div>
+      </div>
+
+      <div class="card">
+        <div class="card-title"><span>◈</span> UPLOAD FILE</div>
+        <div class="upload-drop" id="adDrop" onclick="document.getElementById('adInput').click()" ondragover="e=>{e.preventDefault();document.getElementById('adDrop').classList.add('drag')}" ondragleave="document.getElementById('adDrop').classList.remove('drag')" ondrop="adDrop(event)">
+          <div class="upload-drop-icon">🎵</div>
+          <div class="upload-drop-text">Klik atau <span>drag & drop</span> file MP3</div>
+          <div class="upload-drop-text" style="font-size:11px;margin-top:4px">Multiple files • Max 20MB/file</div>
+        </div>
+        <input type="file" id="adInput" accept="audio/*,.mp3" multiple style="display:none" onchange="setAdminFiles(this.files)"/>
+        <div class="fi-list" id="adFileList"></div>
+
+        <div style="margin-top:16px;padding-top:16px;border-top:1px solid var(--border)">
+          <div class="toggle-row">
+            <label class="toggle-switch"><input type="checkbox" id="adTempoToggle" onchange="document.getElementById('adTempoCtrl').style.display=this.checked?'block':'none'"/><span class="toggle-slider"></span></label>
+            <span class="toggle-lbl">Speed Processing (2x bypass copyright)</span>
+          </div>
+          <div id="adTempoCtrl" style="display:none">
+            <div class="slider-row">
+              <span class="slider-label">SPEED</span>
+              <input type="range" id="adTempoRange" min="5" max="40" value="20" oninput="document.getElementById('adTempoVal').textContent=(this.value/10).toFixed(1)+'x'"/>
+              <span class="slider-val" id="adTempoVal">2.0x</span>
+            </div>
+          </div>
+          <div class="slider-row">
+            <span class="slider-label">PITCH</span>
+            <input type="range" id="adPitchRange" min="-12" max="12" value="0" oninput="document.getElementById('adPitchVal').textContent=(this.value>0?'+':'')+this.value+' st'"/>
+            <span class="slider-val" id="adPitchVal">0 st</span>
+          </div>
+        </div>
+
+        <button class="upload-btn" id="adUpBtn" onclick="startAdminUpload()" disabled>⚡ UPLOAD KE ROBLOX</button>
+        <div id="adProg" style="display:none;margin-top:14px;background:rgba(0,229,255,0.05);border:1px solid rgba(0,229,255,0.12);border-radius:10px;padding:14px">
+          <div class="up-status" id="adStatus">Memproses...</div>
+          <div class="up-bar-wrap"><div class="up-bar" id="adBar" style="width:0%"></div></div>
+          <div id="adResults"></div>
         </div>
       </div>
     </div>
@@ -243,9 +321,7 @@ body::before{content:'';position:fixed;inset:0;background-image:linear-gradient(
           <div class="card-title" style="margin:0"><span>◈</span> LOG UPLOAD</div>
           <button onclick="loadAdminHistory()" class="btn-sm btn-cyan">↻ REFRESH</button>
         </div>
-        <div style="overflow-x:auto" id="historyContainer">
-          <div class="empty-state">Loading...</div>
-        </div>
+        <div style="overflow-x:auto" id="historyContainer"><div class="empty-state">Loading...</div></div>
       </div>
     </div>
 
@@ -257,7 +333,7 @@ body::before{content:'';position:fixed;inset:0;background-image:linear-gradient(
 <div class="modal-bg" id="tierModal">
   <div class="modal">
     <h3>UBAH TIER USER</h3>
-    <div class="modal-btns" id="tierOptions">
+    <div class="modal-btns">
       <div class="tier-option" onclick="selectTier('trial')"><span class="tier-badge tier-trial">TRIAL</span> 3 upload/bulan</div>
       <div class="tier-option" onclick="selectTier('beginner')"><span class="tier-badge tier-beginner">BEGINNER</span> 50 upload/bulan</div>
       <div class="tier-option" onclick="selectTier('pro')"><span class="tier-badge tier-pro">PRO</span> Unlimited upload</div>
@@ -272,235 +348,210 @@ body::before{content:'';position:fixed;inset:0;background-image:linear-gradient(
 <div class="toast" id="toast"></div>
 
 <script>
-let selectedUserId = null;
-let selectedTier = null;
+let selectedUserId=null, selectedTier=null, adminFiles=[];
 
-// =============================================
-// ADMIN AUTH
-// =============================================
+// Responsive sidebar
+function toggleSidebar(){
+  const open = document.getElementById('sidebar').classList.toggle('open');
+  document.getElementById('overlay').classList.toggle('show', open);
+  document.body.classList.toggle('sb-open', open);
+}
+function closeSidebar(){
+  document.getElementById('sidebar').classList.remove('open');
+  document.getElementById('overlay').classList.remove('show');
+  document.body.classList.remove('sb-open');
+}
+function checkHamburger(){document.getElementById('hamburgerBtn').style.display=window.innerWidth<=768?'block':'none';}
+window.addEventListener('resize',checkHamburger);
+checkHamburger();
+
+// Auth
 async function doAdminLogin(){
-  const username = document.getElementById('adminUser').value;
-  const password = document.getElementById('adminPass').value;
-  const r = await fetch('/api/admin/login',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({username,password})});
-  const d = await r.json();
+  const username=document.getElementById('adminUser').value;
+  const password=document.getElementById('adminPass').value;
+  const r=await fetch('/api/admin/login',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({username,password})});
+  const d=await r.json();
   if(d.success){
     document.getElementById('loginPage').style.display='none';
     document.getElementById('mainApp').style.display='block';
-    loadOverview();
-    loadUsers();
-  } else {
-    document.getElementById('loginErr').textContent = d.error || 'Login gagal';
-  }
+    loadOverview();loadAdminRobloxSettings();
+  } else document.getElementById('loginErr').textContent=d.error||'Login gagal';
 }
+async function doLogout(){await fetch('/api/auth/logout',{method:'POST'});location.reload();}
 
-async function doLogout(){
-  await fetch('/api/auth/logout',{method:'POST'});
-  location.reload();
-}
-
-// =============================================
-// NAV
-// =============================================
+// Nav
 function goPage(page){
   document.querySelectorAll('.page-section').forEach(s=>s.classList.remove('active'));
   document.querySelectorAll('.sb-nav a').forEach(a=>a.classList.remove('active'));
   document.getElementById('page-'+page).classList.add('active');
   document.getElementById('nav-'+page).classList.add('active');
-  if(page==='users') loadUsers();
-  if(page==='invites') loadInvites();
-  if(page==='history') loadAdminHistory();
-  if(page==='overview') loadOverview();
+  closeSidebar();
+  if(page==='users')loadUsers();
+  if(page==='invites')loadInvites();
+  if(page==='history')loadAdminHistory();
+  if(page==='overview')loadOverview();
+  if(page==='upload')loadAdminRobloxSettings();
 }
 
-// =============================================
-// OVERVIEW
-// =============================================
+// Overview
 async function loadOverview(){
   try{
-    const r = await fetch('/api/admin/stats');
-    const d = await r.json();
-    document.getElementById('st-total').textContent = d.totalUsers;
-    document.getElementById('st-uploads').textContent = d.totalUploads;
-    const byTier = {};
-    d.byTier.forEach(t=>byTier[t.tier]=t.c);
-    document.getElementById('st-trial').textContent = byTier.trial||0;
-    document.getElementById('st-beginner').textContent = byTier.beginner||0;
-    document.getElementById('st-pro').textContent = byTier.pro||0;
-
-    const ru = document.getElementById('recentUploads');
+    const d=await(await fetch('/api/admin/stats')).json();
+    document.getElementById('st-total').textContent=d.totalUsers;
+    document.getElementById('st-uploads').textContent=d.totalUploads;
+    const bt={};d.byTier.forEach(t=>bt[t.tier]=t.c);
+    document.getElementById('st-trial').textContent=bt.trial||0;
+    document.getElementById('st-beginner').textContent=bt.beginner||0;
+    document.getElementById('st-pro').textContent=bt.pro||0;
+    const ru=document.getElementById('recentUploads');
     if(!d.recentUploads.length){ru.innerHTML='<div class="empty-state"><span class="ei">📭</span>Belum ada upload</div>';return;}
-    ru.innerHTML=`<div style="overflow-x:auto"><table class="data-table">
-      <thead><tr><th>User</th><th>File</th><th>Asset ID</th><th>Status</th><th>Waktu</th></tr></thead>
-      <tbody>${d.recentUploads.map(h=>`<tr>
-        <td>${h.username||'—'}</td>
-        <td style="max-width:160px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap">${h.filename}</td>
-        <td style="font-family:Space Mono;font-size:11px;color:var(--c)">${h.asset_id||'—'}</td>
-        <td><span style="font-size:10px;padding:2px 7px;border-radius:4px;${h.status==='SUCCESS'?'background:rgba(0,229,160,0.1);color:var(--g)':'background:rgba(255,45,107,0.1);color:var(--c3)'}">${h.status}</span></td>
-        <td style="font-size:11px;color:rgba(200,223,240,0.3);font-family:Space Mono">${h.created_at?h.created_at.slice(0,16).replace('T',' '):'—'}</td>
-      </tr>`).join('')}</tbody>
-    </table></div>`;
+    ru.innerHTML=`<div style="overflow-x:auto"><table class="data-table"><thead><tr><th>User</th><th>File</th><th>Asset ID</th><th>Status</th><th>Waktu</th></tr></thead><tbody>
+    ${d.recentUploads.map(h=>`<tr><td>${h.username||'—'}</td><td style="max-width:160px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap">${h.filename}</td>
+    <td style="font-family:Space Mono;font-size:11px;color:var(--c)">${h.asset_id||'—'}</td>
+    <td><span style="font-size:10px;padding:2px 7px;border-radius:4px;${h.status==='SUCCESS'?'background:rgba(0,229,160,0.1);color:var(--g)':'background:rgba(255,45,107,0.1);color:var(--c3)'}">${h.status}</span></td>
+    <td style="font-size:11px;color:rgba(200,223,240,0.3);font-family:Space Mono">${h.created_at?h.created_at.slice(0,16).replace('T',' '):'—'}</td></tr>`).join('')}
+    </tbody></table></div>`;
   }catch(e){console.error(e);}
 }
 
-// =============================================
-// USERS
-// =============================================
+// Users
 async function loadUsers(){
-  const c = document.getElementById('usersContainer');
-  c.innerHTML='<div class="empty-state">Loading...</div>';
+  const c=document.getElementById('usersContainer');c.innerHTML='<div class="empty-state">Loading...</div>';
   try{
-    const r = await fetch('/api/admin/users');
-    const users = await r.json();
+    const users=await(await fetch('/api/admin/users')).json();
     if(!users.length){c.innerHTML='<div class="empty-state"><span class="ei">👥</span>Belum ada user</div>';return;}
-    c.innerHTML=`<table class="data-table">
-      <thead><tr><th>Username</th><th>Tier</th><th>Upload Bulan</th><th>Total</th><th>Status</th><th>Roblox</th><th>Bergabung</th><th>Aksi</th></tr></thead>
-      <tbody>${users.map(u=>`<tr>
-        <td><strong style="color:#fff">${u.username}</strong>${u.email?`<br><span style="font-size:10px;color:rgba(200,223,240,0.3)">${u.email}</span>`:''}</td>
-        <td><span class="tier-badge tier-${u.tier}">${u.tier.toUpperCase()}</span></td>
-        <td style="font-family:Space Mono;color:var(--c)">${u.uploads_this_month}/${u.tier_limit}</td>
-        <td style="font-family:Space Mono">${u.total_uploads}</td>
-        <td>${u.is_active?'<span class="status-on">● Aktif</span>':'<span class="status-off">● Nonaktif</span>'}</td>
-        <td style="font-size:11px">${u.has_api_key?'<span style="color:var(--g)">✓ Terhubung</span>':'<span style="color:rgba(200,223,240,0.3)">✗ Belum</span>'}</td>
-        <td style="font-size:10px;color:rgba(200,223,240,0.3);font-family:Space Mono">${u.created_at?u.created_at.slice(0,10):'—'}</td>
-        <td>
-          <div style="display:flex;gap:5px;flex-wrap:wrap">
-            <button class="btn-sm btn-cyan" onclick="openTierModal('${u.id}','${u.tier}')">TIER</button>
-            <button class="btn-sm btn-orange" onclick="toggleUser('${u.id}')">${u.is_active?'SUSPEND':'AKTIFKAN'}</button>
-            <button class="btn-sm btn-red" onclick="deleteUser('${u.id}','${u.username}')">HAPUS</button>
-          </div>
-        </td>
-      </tr>`).join('')}</tbody>
-    </table>`;
-  }catch(e){c.innerHTML='<div class="empty-state">Error loading</div>';}
+    c.innerHTML=`<table class="data-table"><thead><tr><th>Username</th><th>Tier</th><th>Bulan Ini</th><th>Total</th><th>Status</th><th>Roblox</th><th>Join</th><th>Aksi</th></tr></thead><tbody>
+    ${users.map(u=>`<tr>
+    <td><strong style="color:#fff">${u.username}</strong>${u.email?`<br><span style="font-size:10px;color:rgba(200,223,240,0.3)">${u.email}</span>`:''}</td>
+    <td><span class="tier-badge tier-${u.tier}">${u.tier.toUpperCase()}</span></td>
+    <td style="font-family:Space Mono;color:var(--c)">${u.uploads_this_month}/${u.tier_limit}</td>
+    <td style="font-family:Space Mono">${u.total_uploads}</td>
+    <td>${u.is_active?'<span class="status-on">● Aktif</span>':'<span class="status-off">● Off</span>'}</td>
+    <td>${u.has_api_key?'<span style="color:var(--g);font-size:11px">✓</span>':'<span style="color:rgba(200,223,240,0.3);font-size:11px">✗</span>'}</td>
+    <td style="font-size:10px;color:rgba(200,223,240,0.3);font-family:Space Mono">${u.created_at?u.created_at.slice(0,10):'—'}</td>
+    <td><div style="display:flex;gap:4px;flex-wrap:wrap">
+      <button class="btn-sm btn-cyan" onclick="openTierModal('${u.id}','${u.tier}')">TIER</button>
+      <button class="btn-sm btn-orange" onclick="toggleUser('${u.id}')">${u.is_active?'SUSPEND':'AKTIF'}</button>
+      <button class="btn-sm btn-red" onclick="deleteUser('${u.id}','${u.username}')">HAPUS</button>
+    </div></td></tr>`).join('')}</tbody></table>`;
+  }catch(e){c.innerHTML='<div class="empty-state">Error</div>';}
 }
-
-function openTierModal(userId, currentTier){
-  selectedUserId = userId;
-  selectedTier = currentTier;
-  document.querySelectorAll('.tier-option').forEach(o=>o.classList.remove('selected'));
-  selectTier(currentTier);
-  document.getElementById('tierModal').classList.add('show');
-}
-
-function selectTier(tier){
-  selectedTier = tier;
-  document.querySelectorAll('.tier-option').forEach(o=>o.classList.remove('selected'));
-  const opts = document.querySelectorAll('.tier-option');
-  const tiers = ['trial','beginner','pro'];
-  const idx = tiers.indexOf(tier);
-  if(opts[idx]) opts[idx].classList.add('selected');
-}
-
+function openTierModal(uid,ct){selectedUserId=uid;selectTier(ct);document.getElementById('tierModal').classList.add('show');}
+function selectTier(t){selectedTier=t;const opts=document.querySelectorAll('.tier-option');opts.forEach(o=>o.classList.remove('selected'));const i=['trial','beginner','pro'].indexOf(t);if(opts[i])opts[i].classList.add('selected');}
 function closeTierModal(){document.getElementById('tierModal').classList.remove('show');}
-
 async function saveTier(){
   if(!selectedUserId||!selectedTier)return;
-  const r = await fetch(`/api/admin/users/${selectedUserId}/tier`,{method:'PATCH',headers:{'Content-Type':'application/json'},body:JSON.stringify({tier:selectedTier})});
-  const d = await r.json();
-  if(d.success){toast('Tier berhasil diubah','success');closeTierModal();loadUsers();}
-  else toast('Gagal mengubah tier','error');
+  const d=await(await fetch(`/api/admin/users/${selectedUserId}/tier`,{method:'PATCH',headers:{'Content-Type':'application/json'},body:JSON.stringify({tier:selectedTier})})).json();
+  if(d.success){toast('Tier diubah','success');closeTierModal();loadUsers();}else toast('Gagal','error');
+}
+async function toggleUser(uid){const d=await(await fetch(`/api/admin/users/${uid}/toggle`,{method:'PATCH'})).json();if(d.success){toast('Status diperbarui','success');loadUsers();}}
+async function deleteUser(uid,name){
+  if(!confirm(`Hapus user "${name}"?`))return;
+  const d=await(await fetch(`/api/admin/users/${uid}`,{method:'DELETE'})).json();
+  if(d.success){toast('User dihapus','success');loadUsers();}
 }
 
-async function toggleUser(userId){
-  const r = await fetch(`/api/admin/users/${userId}/toggle`,{method:'PATCH'});
-  const d = await r.json();
-  if(d.success){toast('Status user diperbarui','success');loadUsers();}
-}
-
-async function deleteUser(userId, username){
-  if(!confirm(`Yakin hapus user "${username}"? Ini tidak bisa dibatalkan!`))return;
-  const r = await fetch(`/api/admin/users/${userId}`,{method:'DELETE'});
-  const d = await r.json();
-  if(d.success){toast('User berhasil dihapus','success');loadUsers();}
-}
-
-// =============================================
-// INVITE CODES
-// =============================================
+// Invites
 async function createInvite(){
-  const body = {
-    tier: document.getElementById('newTier').value,
-    max_uses: parseInt(document.getElementById('newMaxUses').value)||1,
-    expires_at: document.getElementById('newExpires').value||null,
-    custom_code: document.getElementById('newCode').value.trim()||null
-  };
-  const r = await fetch('/api/admin/invites',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify(body)});
-  const d = await r.json();
-  if(d.success){
-    toast(`Kode "${d.code}" berhasil dibuat!`,'success');
-    document.getElementById('newCode').value='';
-    loadInvites();
-  } else toast(d.error||'Gagal','error');
+  const body={tier:document.getElementById('newTier').value,max_uses:parseInt(document.getElementById('newMaxUses').value)||1,expires_at:document.getElementById('newExpires').value||null,custom_code:document.getElementById('newCode').value.trim()||null};
+  const d=await(await fetch('/api/admin/invites',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify(body)})).json();
+  if(d.success){toast(`Kode "${d.code}" dibuat!`,'success');document.getElementById('newCode').value='';loadInvites();}else toast(d.error||'Gagal','error');
 }
-
 async function loadInvites(){
-  const c = document.getElementById('invitesContainer');
-  c.innerHTML='<div class="empty-state">Loading...</div>';
+  const c=document.getElementById('invitesContainer');c.innerHTML='<div class="empty-state">Loading...</div>';
   try{
-    const r = await fetch('/api/admin/invites');
-    const codes = await r.json();
+    const codes=await(await fetch('/api/admin/invites')).json();
     if(!codes.length){c.innerHTML='<div class="empty-state"><span class="ei">🎫</span>Belum ada kode</div>';return;}
-    c.innerHTML=`<table class="data-table">
-      <thead><tr><th>Kode</th><th>Tier</th><th>Penggunaan</th><th>Expires</th><th>Status</th><th>Dibuat</th><th>Aksi</th></tr></thead>
-      <tbody>${codes.map(c=>`<tr>
-        <td>
-          <span class="code-badge">${c.code}</span>
-          <button onclick="copyText('${c.code}')" class="btn-sm btn-cyan" style="margin-left:6px">COPY</button>
-        </td>
-        <td><span class="tier-badge tier-${c.tier}">${c.tier.toUpperCase()}</span></td>
-        <td style="font-family:Space Mono;color:var(--c)">${c.uses}/${c.max_uses===0?'∞':c.max_uses}</td>
-        <td style="font-size:11px;color:rgba(200,223,240,0.35)">${c.expires_at||'Tidak ada'}</td>
-        <td>${c.is_active?'<span class="status-on">● Aktif</span>':'<span class="status-off">● Tidak Aktif</span>'}</td>
-        <td style="font-size:10px;color:rgba(200,223,240,0.3);font-family:Space Mono">${c.created_at?c.created_at.slice(0,10):'—'}</td>
-        <td><button class="btn-sm btn-red" onclick="deleteInvite('${c.id}')">HAPUS</button></td>
-      </tr>`).join('')}</tbody>
-    </table>`;
+    c.innerHTML=`<table class="data-table"><thead><tr><th>Kode</th><th>Tier</th><th>Pakai</th><th>Expires</th><th>Status</th><th>Aksi</th></tr></thead><tbody>
+    ${codes.map(c=>`<tr>
+    <td><span class="code-badge">${c.code}</span> <button onclick="copyText('${c.code}')" class="btn-sm btn-cyan" style="margin-top:2px">COPY</button></td>
+    <td><span class="tier-badge tier-${c.tier}">${c.tier.toUpperCase()}</span></td>
+    <td style="font-family:Space Mono;color:var(--c)">${c.uses}/${c.max_uses===0?'∞':c.max_uses}</td>
+    <td style="font-size:11px;color:rgba(200,223,240,0.35)">${c.expires_at||'∞'}</td>
+    <td>${c.is_active?'<span class="status-on">● Aktif</span>':'<span class="status-off">● Off</span>'}</td>
+    <td><button class="btn-sm btn-red" onclick="deleteInvite('${c.id}')">HAPUS</button></td></tr>`).join('')}</tbody></table>`;
   }catch(e){c.innerHTML='<div class="empty-state">Error</div>';}
 }
+async function deleteInvite(id){if(!confirm('Hapus kode ini?'))return;const d=await(await fetch('/api/admin/invites/'+id,{method:'DELETE'})).json();if(d.success){toast('Kode dihapus','success');loadInvites();}}
 
-async function deleteInvite(id){
-  if(!confirm('Hapus kode invite ini?'))return;
-  const r = await fetch('/api/admin/invites/'+id,{method:'DELETE'});
-  const d = await r.json();
-  if(d.success){toast('Kode dihapus','success');loadInvites();}
-}
-
-// =============================================
-// HISTORY
-// =============================================
-async function loadAdminHistory(){
-  const c = document.getElementById('historyContainer');
-  c.innerHTML='<div class="empty-state">Loading...</div>';
+// Admin Roblox
+function toggleGroupFields(){document.getElementById('adGroupFields').style.display=document.getElementById('adCreatorType').value==='group'?'block':'none';}
+async function loadAdminRobloxSettings(){
   try{
-    const r = await fetch('/api/admin/history');
-    const data = await r.json();
+    const d=await(await fetch('/api/admin/roblox-settings')).json();
+    document.getElementById('adCreatorType').value=d.creator_type||'user';
+    document.getElementById('adUserId').value=d.roblox_user_id||'';
+    document.getElementById('adGroupId').value=d.roblox_group_id||'';
+    toggleGroupFields();
+    if(d.has_api_key)document.getElementById('adSettingStatus').textContent='✓ API Key tersimpan';
+  }catch(e){}
+}
+async function saveAdminRoblox(){
+  const body={creator_type:document.getElementById('adCreatorType').value,roblox_user_id:document.getElementById('adUserId').value.trim(),roblox_api_key:document.getElementById('adApiKey').value.trim(),roblox_group_id:document.getElementById('adGroupId').value.trim(),roblox_group_api_key:document.getElementById('adGroupApiKey').value.trim()};
+  const d=await(await fetch('/api/admin/roblox-settings',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify(body)})).json();
+  if(d.success){toast('Settings tersimpan!','success');document.getElementById('adSettingStatus').textContent='✓ Tersimpan';document.getElementById('adApiKey').value='';document.getElementById('adGroupApiKey').value='';}
+  else toast(d.error||'Gagal','error');
+}
+
+// Admin Upload
+function adDrop(e){e.preventDefault();document.getElementById('adDrop').classList.remove('drag');setAdminFiles(e.dataTransfer.files);}
+function setAdminFiles(files){
+  adminFiles=Array.from(files);
+  const list=document.getElementById('adFileList');
+  if(!adminFiles.length){list.innerHTML='';document.getElementById('adUpBtn').disabled=true;return;}
+  document.getElementById('adUpBtn').disabled=false;
+  list.innerHTML=adminFiles.map((f,i)=>`<div class="fi-item" id="adfi-${i}"><span class="fi-status" id="adfs-${i}">🎵</span><span class="fi-name">${f.name}</span><span class="fi-size">${(f.size/1024/1024).toFixed(2)}MB</span></div>`).join('');
+}
+async function startAdminUpload(){
+  if(!adminFiles.length)return;
+  const btn=document.getElementById('adUpBtn');btn.disabled=true;
+  const prog=document.getElementById('adProg');prog.style.display='block';
+  document.getElementById('adResults').innerHTML='';
+  adminFiles.forEach((_,i)=>{const s=document.getElementById('adfs-'+i);if(s){s.textContent='⏳';s.style.color='#ff9800';}});
+  const fd=new FormData();
+  adminFiles.forEach(f=>fd.append('files',f));
+  fd.append('processTempo',document.getElementById('adTempoToggle').checked);
+  fd.append('tempoMultiplier',(document.getElementById('adTempoRange').value/10).toFixed(1));
+  fd.append('pitchShift',document.getElementById('adPitchRange').value);
+  document.getElementById('adStatus').textContent='Mengupload ke Roblox...';
+  document.getElementById('adBar').style.width='30%';
+  try{
+    const r=await fetch('/api/admin/upload',{method:'POST',body:fd});
+    const d=await r.json();
+    document.getElementById('adBar').style.width='100%';
+    document.getElementById('adStatus').textContent=`Selesai: ${d.success}/${d.total} berhasil`;
+    const res=document.getElementById('adResults');
+    d.results.forEach((item,i)=>{
+      const s=document.getElementById('adfs-'+i);
+      if(s){s.textContent=item.status==='SUCCESS'?'✅':'❌';s.style.color=item.status==='SUCCESS'?'var(--g)':'var(--c3)';}
+      const div=document.createElement('div');
+      div.className='result-item '+(item.status==='SUCCESS'?'result-ok':'result-fail');
+      div.innerHTML=item.status==='SUCCESS'
+        ?`<span>✅</span><span style="flex:1;overflow:hidden;text-overflow:ellipsis">${item.filename}</span><span style="font-family:Space Mono;font-size:11px;color:var(--c)">${item.asset_id}</span><button onclick="copyText('${item.asset_id}')" class="btn-sm btn-cyan" style="font-size:9px">COPY</button>`
+        :`<span>❌</span><span style="flex:1">${item.filename}</span><span style="color:rgba(200,223,240,0.4);font-size:11px">${(item.error_msg||'').slice(0,60)}</span>`;
+      res.appendChild(div);
+    });
+    toast(`${d.success}/${d.total} berhasil!`,d.success>0?'success':'error');
+  }catch(e){document.getElementById('adStatus').textContent='Error: '+e.message;toast('Upload gagal','error');}
+  btn.disabled=false;
+}
+
+// History
+async function loadAdminHistory(){
+  const c=document.getElementById('historyContainer');c.innerHTML='<div class="empty-state">Loading...</div>';
+  try{
+    const data=await(await fetch('/api/admin/history')).json();
     if(!data.length){c.innerHTML='<div class="empty-state"><span class="ei">📭</span>Belum ada upload</div>';return;}
-    c.innerHTML=`<table class="data-table">
-      <thead><tr><th>User</th><th>File</th><th>Asset ID</th><th>Status</th><th>Waktu</th></tr></thead>
-      <tbody>${data.map(h=>`<tr>
-        <td><strong>${h.username||'?'}</strong></td>
-        <td style="max-width:180px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap">${h.filename}</td>
-        <td style="font-family:Space Mono;font-size:11px;color:var(--c)">${h.asset_id||'—'}</td>
-        <td><span style="font-size:10px;padding:2px 7px;border-radius:4px;${h.status==='SUCCESS'?'background:rgba(0,229,160,0.1);color:var(--g)':'background:rgba(255,45,107,0.1);color:var(--c3)'}">${h.status}</span></td>
-        <td style="font-size:10px;color:rgba(200,223,240,0.3);font-family:Space Mono">${h.created_at?h.created_at.slice(0,16).replace('T',' '):'—'}</td>
-      </tr>`).join('')}</tbody>
-    </table>`;
+    c.innerHTML=`<table class="data-table"><thead><tr><th>User</th><th>File</th><th>Asset ID</th><th>Status</th><th>Waktu</th></tr></thead><tbody>
+    ${data.map(h=>`<tr><td><strong>${h.username||'?'}</strong></td><td style="max-width:180px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap">${h.filename}</td>
+    <td style="font-family:Space Mono;font-size:11px;color:var(--c)">${h.asset_id||'—'}</td>
+    <td><span style="font-size:10px;padding:2px 7px;border-radius:4px;${h.status==='SUCCESS'?'background:rgba(0,229,160,0.1);color:var(--g)':'background:rgba(255,45,107,0.1);color:var(--c3)'}">${h.status}</span></td>
+    <td style="font-size:10px;color:rgba(200,223,240,0.3);font-family:Space Mono">${h.created_at?h.created_at.slice(0,16).replace('T',' '):'—'}</td></tr>`).join('')}</tbody></table>`;
   }catch(e){c.innerHTML='<div class="empty-state">Error</div>';}
 }
 
-// =============================================
-// UTILS
-// =============================================
-function copyText(text){
-  navigator.clipboard.writeText(text).then(()=>toast('Disalin!','success'));
-}
-
-function toast(msg, type=''){
-  const el = document.getElementById('toast');
-  el.textContent=msg;
-  el.className='toast '+type+' show';
-  setTimeout(()=>el.classList.remove('show'),3000);
-}
+function copyText(t){navigator.clipboard.writeText(t).then(()=>toast('Disalin!','success'));}
+function toast(msg,type=''){const el=document.getElementById('toast');el.textContent=msg;el.className='toast '+type+' show';setTimeout(()=>el.classList.remove('show'),3000);}
 </script>
 </body>
 </html>
