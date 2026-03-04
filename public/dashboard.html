@@ -98,6 +98,11 @@ body.sb-open .main{pointer-events:none;user-select:none}
 .fi-status.uploading{color:#ff9800}
 .fi-status.success{color:var(--g);background:rgba(0,229,160,0.08)}
 .fi-status.failed{color:var(--c3);background:rgba(255,45,107,0.08)}
+.fi-title{flex:1;min-width:130px;background:rgba(0,229,255,0.04);border:1px solid rgba(0,229,255,0.2);border-radius:6px;padding:5px 9px;font-size:12px;color:#c8dff0;outline:none;transition:border-color .2s,background .2s;font-family:'Inter',sans-serif}
+.fi-title:focus{border-color:rgba(0,229,255,0.55);background:rgba(0,229,255,0.08)}
+.fi-title::placeholder{color:rgba(200,223,240,0.28)}
+.fi-title.empty{border-color:rgba(255,45,107,0.5);background:rgba(255,45,107,0.04)}
+.file-item{display:flex;align-items:center;gap:8px;background:var(--bg3);border:1px solid rgba(255,255,255,0.05);border-radius:8px;padding:9px 11px;flex-wrap:wrap}
 
 /* PROCESSOR */
 .proc-row{display:grid;grid-template-columns:1fr 1fr;gap:12px;margin-bottom:14px}
@@ -613,7 +618,7 @@ input[type=range].fo-range::-webkit-slider-thumb{background:#ff2d6b;box-shadow:0
 // STATE
 // =============================================
 let user = null;
-let files = [];
+let files = []; // each entry: { file: File, title: '' }
 let currentPreviewFile = null;
 let audioCtx = null;
 let analyser = null;
@@ -737,21 +742,22 @@ function setupDrop(){
 function addFiles(newFiles){
   const mp3s = newFiles.filter(f=>f.type==='audio/mpeg'||f.name.endsWith('.mp3'));
   if(!mp3s.length){toast('Hanya file MP3 yang didukung','error');return;}
-  mp3s.forEach(f=>{ if(!files.find(x=>x.name===f.name&&x.size===f.size)) files.push(f); });
+  mp3s.forEach(f=>{ if(!files.find(x=>x.file.name===f.name&&x.file.size===f.size)) files.push({file:f,title:''}); });
   renderFiles();
-  if(files.length && !currentPreviewFile) setPreview(files[0]);
+  if(files.length && !currentPreviewFile) setPreview(files[0].file);
 }
 
 function renderFiles(){
   const list = document.getElementById('fileList');
   if(!files.length){list.innerHTML='';document.getElementById('uploadBtn').disabled=true;document.getElementById('previewBox').style.display='none';return;}
   document.getElementById('uploadBtn').disabled=false;
-  list.innerHTML = files.map((f,i)=>`
+  list.innerHTML = files.map((entry,i)=>`
     <div class="file-item" id="fi-${i}">
       <span class="fi-icon">🎵</span>
-      <span class="fi-name">${f.name}</span>
-      <span class="fi-size">${(f.size/1024).toFixed(0)}KB</span>
-      <button class="fi-play" onclick="setPreview(files[${i}])" title="Preview">▶</button>
+      <span class="fi-name" style="max-width:130px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis">${entry.file.name}</span>
+      <input type="text" class="fi-title" id="fit-${i}" placeholder="Judul lagu (wajib)" value="${entry.title||''}" oninput="files[${i}].title=this.value;this.classList.toggle('empty',!this.value.trim())" />
+      <span class="fi-size">${(entry.file.size/1024).toFixed(0)}KB</span>
+      <button class="fi-play" onclick="setPreview(files[${i}].file)" title="Preview">▶</button>
       <span class="fi-status pending" id="fis-${i}">—</span>
       <button class="fi-remove" onclick="removeFile(${i})">✕</button>
     </div>
@@ -759,10 +765,10 @@ function renderFiles(){
 }
 
 function removeFile(i){
-  if(currentPreviewFile===files[i]){stopPreview();currentPreviewFile=null;document.getElementById('previewBox').style.display='none';}
+  if(currentPreviewFile===files[i].file){stopPreview();currentPreviewFile=null;document.getElementById('previewBox').style.display='none';}
   files.splice(i,1);
   renderFiles();
-  if(files.length && !currentPreviewFile) setPreview(files[0]);
+  if(files.length && !currentPreviewFile) setPreview(files[0].file);
 }
 
 // =============================================
@@ -892,14 +898,26 @@ async function startUpload(){
   document.getElementById('resultsBox').style.display='none';
   document.getElementById('resultsBox').innerHTML='';
 
+  // Validate all titles filled
+  let missingTitle = false;
+  files.forEach((entry,i)=>{
+    const inp = document.getElementById('fit-'+i);
+    if(!entry.title||!entry.title.trim()){
+      missingTitle=true;
+      if(inp){inp.classList.add('empty');inp.focus();}
+    }
+  });
+  if(missingTitle){toast('⚠️ Isi judul untuk semua lagu dulu!','error');btn.disabled=false;return;}
+
   const fd = new FormData();
-  files.forEach(f=>fd.append('files',f));
+  files.forEach(entry=>fd.append('files',entry.file));
+  files.forEach(entry=>fd.append('titles[]',entry.title.trim()));
   fd.append('processTempo', document.getElementById('tempoToggle').checked);
   fd.append('tempoMultiplier', (document.getElementById('tempoRange').value/10).toFixed(1));
   fd.append('pitchShift', document.getElementById('pitchRange').value);
 
   // set all to uploading
-  files.forEach((_,i)=>{
+  files.forEach((entry,i)=>{
     const s = document.getElementById('fis-'+i);
     if(s){s.textContent='⏳';s.className='fi-status uploading';}
   });
@@ -936,7 +954,7 @@ async function startUpload(){
       `).join('');
 
       d.results.forEach((res,i)=>{
-        const fi = files.findIndex(f=>f.name===res.file||f.name===res.filename);
+        const fi = files.findIndex(e=>e.file.name===res.file||e.file.name===res.filename);
         if(fi>=0){
           const s=document.getElementById('fis-'+fi);
           if(s){s.textContent=res.status==='SUCCESS'?'✅':'❌';s.className='fi-status '+(res.status==='SUCCESS'?'success':'failed');}
@@ -951,7 +969,7 @@ async function startUpload(){
     document.getElementById('upStatus').textContent='Error koneksi';
   }
 
-  btn.disabled = files.length===0;
+  btn.disabled = (files.length===0);
 }
 
 
