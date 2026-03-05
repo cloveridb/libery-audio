@@ -653,26 +653,46 @@ async function pollOperation(operationId, apiKey, maxAttempts = 20) {
 }
 
 // ============================================================
-// UPLOAD ROUTE
+// UPLOAD ROUTE — SSE Streaming (anti-timeout Railway)
 // ============================================================
 const upload = multer({ storage: multer.memoryStorage(), limits: { fileSize: 20 * 1024 * 1024 } });
 
 app.post("/api/upload", requireAuth, upload.array("files"), async (req, res) => {
   const user = checkResetMonthly(req.session.userId);
-  if (!user.is_active) return res.status(403).json({ error: "Akun kamu dinonaktifkan." });
+
+  // --- Validasi awal (sebelum SSE dimulai) ---
+  if (!user.is_active)
+    return res.status(403).json({ error: "Akun kamu dinonaktifkan." });
   const apiKey = user.creator_type === "group" ? user.roblox_group_api_key : user.roblox_api_key;
-  if (!apiKey) return res.status(400).json({ error: "Belum ada API Key Roblox. Pergi ke Settings." });
-  if (!req.files?.length) return res.status(400).json({ error: "Tidak ada file." });
+  if (!apiKey)
+    return res.status(400).json({ error: "Belum ada API Key Roblox. Pergi ke Settings." });
+  if (!req.files?.length)
+    return res.status(400).json({ error: "Tidak ada file." });
 
   const tierInfo = TIERS[user.tier] || TIERS.trial;
   const remaining = tierInfo.limit - user.uploads_this_month;
   const filesToProcess = user.tier === "pro" ? req.files : req.files.slice(0, Math.max(0, remaining));
 
-  if (filesToProcess.length === 0) {
+  if (filesToProcess.length === 0)
     return res.status(429).json({ error: `Limit upload bulan ini habis (${tierInfo.limit}/${tierInfo.label}). Upgrade tier kamu!` });
-  }
 
-  // read titles array (from client names input)
+  // --- Mulai SSE — koneksi tetap hidup selama proses ---
+  res.setHeader("Content-Type", "text/event-stream");
+  res.setHeader("Cache-Control", "no-cache");
+  res.setHeader("Connection", "keep-alive");
+  res.setHeader("X-Accel-Buffering", "no"); // nonaktifkan buffering nginx/railway
+  res.flushHeaders();
+
+  const send = (data) => {
+    try { res.write(`data: ${JSON.stringify(data)}\n\n`); } catch {}
+  };
+
+  // Heartbeat tiap 8 detik supaya Railway/proxy tidak memutus koneksi
+  const heartbeat = setInterval(() => {
+    try { res.write(": heartbeat\n\n"); } catch {}
+  }, 8000);
+
+  // Parse body
   let allTitles = [];
   if (req.body['titles[]']) {
     allTitles = Array.isArray(req.body['titles[]']) ? req.body['titles[]'] : [req.body['titles[]']];
@@ -680,25 +700,32 @@ app.post("/api/upload", requireAuth, upload.array("files"), async (req, res) => 
     allTitles = Array.isArray(req.body.titles) ? req.body.titles : [req.body.titles];
   }
   const titlesToUse = allTitles.slice(0, filesToProcess.length);
-
   const processTempo = req.body.processTempo === "true";
   const tempoMultiplier = parseFloat(req.body.tempoMultiplier) || 1.0;
   const pitchShift = parseFloat(req.body.pitchShift) || 0;
+
   const results = [];
+  let successCount = 0;
 
   for (let idx = 0; idx < filesToProcess.length; idx++) {
     const file = filesToProcess[idx];
     const forcedTitle = titlesToUse[idx];
     log(`Upload: ${file.originalname} by ${user.username}`);
+
+    // Beritahu client: file ini sedang diproses
+    send({ type: "progress", index: idx, file: file.originalname, status: "processing", message: `[${idx+1}/${filesToProcess.length}] Memproses audio: ${file.originalname}` });
+
     let fileBuffer = file.buffer;
     const needsProcess = processTempo || pitchShift !== 0;
 
     if (needsProcess) {
+      send({ type: "progress", index: idx, file: file.originalname, status: "processing", message: `[${idx+1}/${filesToProcess.length}] FFmpeg: mengubah tempo/pitch...` });
       try {
         fileBuffer = await processAudio(file.buffer, file.originalname, processTempo ? tempoMultiplier : 1.0, pitchShift);
+        send({ type: "progress", index: idx, file: file.originalname, status: "processing", message: `[${idx+1}/${filesToProcess.length}] Audio selesai diproses, mengupload...` });
       } catch (e) {
         log(`FFmpeg error: ${e.message}`, "warn");
-        // fallback original
+        send({ type: "progress", index: idx, file: file.originalname, status: "processing", message: `[${idx+1}/${filesToProcess.length}] FFmpeg gagal, upload file original...` });
       }
     }
 
@@ -712,6 +739,9 @@ app.post("/api/upload", requireAuth, upload.array("files"), async (req, res) => 
 
     let success = false;
     for (let attempt = 1; attempt <= 3 && !success; attempt++) {
+      if (attempt > 1) {
+        send({ type: "progress", index: idx, file: file.originalname, status: "processing", message: `[${idx+1}/${filesToProcess.length}] Retry ke-${attempt}...` });
+      }
       try {
         const forced = forcedTitle && forcedTitle.trim();
         const displayName = forced || path.basename(file.originalname, path.extname(file.originalname));
@@ -721,7 +751,7 @@ app.post("/api/upload", requireAuth, upload.array("files"), async (req, res) => 
 
         const metadata = {
           assetType: "Audio", displayName,
-          description: "THANKS SUDAH MENGGUNAKAN",
+          description: "Uploaded via XELLO Studio",
           creationContext: { creator: creatorField }
         };
         const form = new FormData();
@@ -735,12 +765,13 @@ app.post("/api/upload", requireAuth, upload.array("files"), async (req, res) => 
 
         let { assetId, operationId } = response.data;
         if (operationId && !assetId) {
+          send({ type: "progress", index: idx, file: file.originalname, status: "processing", message: `[${idx+1}/${filesToProcess.length}] Menunggu Roblox memproses aset...` });
           const poll = await pollOperation(operationId, apiKey);
           if (poll.success) assetId = poll.assetId;
           else throw new Error(JSON.stringify(poll.error));
         }
 
-        // PATCH to update displayName after asset is created
+        // PATCH displayName setelah asset dibuat
         if (assetId && forced) {
           try {
             await axios.patch(
@@ -760,13 +791,22 @@ app.post("/api/upload", requireAuth, upload.array("files"), async (req, res) => 
         db.prepare("UPDATE users SET uploads_this_month = uploads_this_month + 1, total_uploads = total_uploads + 1 WHERE id = ?")
           .run(user.id);
         success = true;
+        successCount++;
         log(`Success: ${file.originalname} → ${assetId}`, "success");
+
+        // Beritahu client file ini sukses
+        send({ type: "progress", index: idx, file: file.originalname, status: "success", asset_id: assetId, message: `[${idx+1}/${filesToProcess.length}] ✅ ${file.originalname} → ${assetId}` });
+
       } catch (e) {
         histEntry.error_msg = e.response?.data ? JSON.stringify(e.response.data) : e.message;
         log(`Attempt ${attempt} failed: ${histEntry.error_msg}`, "error");
         if (e.response?.status === 429) await new Promise(r => setTimeout(r, 10000));
         else if (attempt < 3) await new Promise(r => setTimeout(r, 2000));
       }
+    }
+
+    if (!success) {
+      send({ type: "progress", index: idx, file: file.originalname, status: "failed", error_msg: histEntry.error_msg, message: `[${idx+1}/${filesToProcess.length}] ❌ Gagal: ${histEntry.error_msg?.slice(0,80)}` });
     }
 
     db.prepare(`
@@ -777,11 +817,13 @@ app.post("/api/upload", requireAuth, upload.array("files"), async (req, res) => 
       histEntry.tempo_multiplier, histEntry.pitch_shift, histEntry.file_size);
 
     results.push({ ...histEntry, file: file.originalname });
-    await new Promise(r => setTimeout(r, 1000));
+
+    if (idx < filesToProcess.length - 1) await new Promise(r => setTimeout(r, 1000));
   }
 
-  const sukses = results.filter(r => r.status === "SUCCESS").length;
-  res.json({ total: filesToProcess.length, success: sukses, results });
+  clearInterval(heartbeat);
+  send({ type: "done", total: filesToProcess.length, success: successCount, results });
+  res.end();
 });
 
 app.get("/api/history", requireAuth, (req, res) => {

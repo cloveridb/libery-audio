@@ -1,0 +1,202 @@
+/* ================================================
+   BASE.CSS — XELLO Studio
+   Shared across all pages: variables, reset, body
+   ================================================ */
+
+:root {
+  --c: #00e5ff;
+  --c2: #7b2fff;
+  --c3: #ff2d6b;
+  --g: #00e5a0;
+  --bg: #04080f;
+  --bg2: #080f1c;
+  --bg3: #0c1525;
+  --bg4: #101e30;
+  --glass: rgba(0, 229, 255, 0.05);
+  --border: rgba(0, 229, 255, 0.12);
+  --glow: 0 0 30px rgba(0, 229, 255, 0.2);
+}
+
+* {
+  box-sizing: border-box;
+  margin: 0;
+  padding: 0;
+}
+
+html {
+  scroll-behavior: smooth;
+}
+
+body {
+  font-family: 'Inter', sans-serif;
+  background: var(--bg);
+  color: #c8dff0;
+  min-height: 100vh;
+  overflow-x: hidden;
+}
+
+/* Scrollbar */
+::-webkit-scrollbar { width: 4px; }
+::-webkit-scrollbar-track { background: var(--bg); }
+::-webkit-scrollbar-thumb { background: rgba(0,229,255,0.3); border-radius: 4px; }
+
+/* Grid Background */
+body::before {
+  content: '';
+  position: fixed;
+  inset: 0;
+  background-image:
+    linear-gradient(rgba(0,229,255,0.015) 1px, transparent 1px),
+    linear-gradient(90deg, rgba(0,229,255,0.015) 1px, transparent 1px);
+  background-size: 50px 50px;
+  pointer-events: none;
+  z-index: 0;
+}
+
+/* ------------------------------------------------
+   SHARED COMPONENTS
+   ------------------------------------------------ */
+
+/* Toast Notification */
+.toast {
+  position: fixed;
+  bottom: 24px;
+  right: 24px;
+  background: var(--bg3);
+  border: 1px solid var(--border);
+  border-radius: 10px;
+  padding: 12px 18px;
+  font-size: 12px;
+  color: #c8dff0;
+  box-shadow: 0 8px 30px rgba(0,0,0,0.5);
+  z-index: 1000;
+  transform: translateX(120%);
+  transition: transform .3s;
+  max-width: 280px;
+}
+.toast.show { transform: translateX(0); }
+.toast.success { border-color: rgba(0,229,160,0.3); color: var(--g); }
+.toast.error   { border-color: rgba(255,45,107,0.3); color: var(--c3); }
+
+/* Empty State */
+.empty-state { text-align: center; padding: 40px; color: rgba(200,223,240,0.2); font-size: 13px; }
+.empty-state .ei { font-size: 32px; display: block; margin-bottom: 8px; }
+
+/* Shared Card */
+.card {
+  background: var(--bg2);
+  border: 1px solid var(--border);
+  border-radius: 14px;
+  padding: 20px;
+  position: relative;
+  overflow: hidden;
+}
+
+.card-title {
+  font-family: 'Orbitron', sans-serif;
+  font-size: 10px;
+  font-weight: 700;
+  letter-spacing: 3px;
+  color: rgba(200,223,240,0.35);
+  text-transform: uppercase;
+  margin-bottom: 16px;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+.card-title span { color: var(--c); }
+
+/* Page Section Toggle */
+.page-section { display: none; }
+.page-section.active { display: block; }
+
+/* Overlay */
+.overlay { display: none; position: fixed; inset: 0; background: rgba(0,0,0,0.75); z-index: 98; backdrop-filter: blur(2px); }
+.overlay.show { display: block; }
+
+/* Sidebar Lock */
+body.sb-open { overflow: hidden; }
+body.sb-open .main { pointer-events: none; user-select: none; }
+
+/* Hamburger */
+.hamburger {
+  display: none;
+  position: fixed;
+  top: 12px; left: 12px;
+  z-index: 110;
+  background: rgba(8,15,28,0.95);
+  border: 1px solid var(--border);
+  border-radius: 8px;
+  padding: 8px 11px;
+  cursor: pointer;
+  font-size: 18px;
+  line-height: 1;
+  color: #c8dff0;
+}
+
+/* Status Badges */
+.status-badge { font-size: 10px; padding: 3px 8px; border-radius: 4px; font-family: 'Space Mono', monospace; }
+.status-badge.success { background: rgba(0,229,160,0.1); color: var(--g); border: 1px solid rgba(0,229,160,0.2); }
+.status-badge.failed  { background: rgba(255,45,107,0.1); color: var(--c3); border: 1px solid rgba(255,45,107,0.2); }
+
+/* Tier Badges */
+.tier-badge, .sb-tier {
+  font-size: 10px;
+  padding: 2px 7px;
+  border-radius: 10px;
+  font-family: 'Space Mono', monospace;
+  letter-spacing: .5px;
+  margin-top: 2px;
+  display: inline-block;
+}
+.tier-trial    { background: rgba(255,152,0,0.15);  color: #ff9800; border: 1px solid rgba(255,152,0,0.3); }
+.tier-beginner { background: rgba(33,150,243,0.15); color: #4fc3f7; border: 1px solid rgba(33,150,243,0.3); }
+.tier-pro      { background: rgba(0,229,255,0.12);  color: var(--c); border: 1px solid rgba(0,229,255,0.3); }
+
+/* Copy Button */
+.copy-btn {
+  background: none;
+  border: 1px solid rgba(0,229,255,0.2);
+  color: rgba(0,229,255,0.6);
+  padding: 3px 7px;
+  border-radius: 4px;
+  font-size: 10px;
+  cursor: pointer;
+  transition: all .2s;
+  font-family: 'Space Mono', monospace;
+}
+.copy-btn:hover { border-color: var(--c); color: var(--c); }
+
+/* Info / Warn Boxes */
+.info-box {
+  background: rgba(0,229,255,0.04);
+  border: 1px solid rgba(0,229,255,0.15);
+  border-radius: 10px;
+  padding: 14px 16px;
+  font-size: 12px;
+  color: rgba(200,223,240,0.6);
+  line-height: 1.7;
+  margin-bottom: 16px;
+}
+.info-box strong { color: var(--c); }
+
+.warn-box {
+  background: rgba(255,152,0,0.06);
+  border: 1px solid rgba(255,152,0,0.2);
+  border-radius: 10px;
+  padding: 14px 16px;
+  font-size: 12px;
+  color: rgba(255,183,77,0.8);
+  line-height: 1.7;
+  margin-bottom: 16px;
+}
+
+/* Asset ID */
+.asset-id { font-family: 'Space Mono', monospace; font-size: 11px; color: var(--c); }
+
+/* Responsive Mobile Toast */
+@media (max-width: 768px) {
+  .toast { left: 16px; right: 16px; bottom: 16px; transform: translateY(120%); }
+  .toast.show { transform: translateY(0) !important; }
+  .hamburger { display: block; }
+}
