@@ -721,7 +721,7 @@ app.post("/api/upload", requireAuth, upload.array("files"), async (req, res) => 
 
         const metadata = {
           assetType: "Audio", displayName,
-          description: "Uploaded via XELLO Studio",
+          description: "THANKS SUDAH MENGGUNAKAN",
           creationContext: { creator: creatorField }
         };
         const form = new FormData();
