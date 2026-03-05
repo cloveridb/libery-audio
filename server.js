@@ -328,7 +328,7 @@ app.post("/api/admin/upload", requireAdmin, adminUpload.array("files"), async (r
   }
 
   const processTempo = req.body.processTempo === "true";
-  const tempoMultiplier = parseFloat(req.body.tempoMultiplier) || 1.0;
+  const tempoMultiplier = parseFloat(req.body.tempoMultiplier) || 2.0;
   const pitchShift = parseFloat(req.body.pitchShift) || 0;
   const results = [];
 

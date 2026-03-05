@@ -501,7 +501,6 @@ function renderFiles(){
     <div class="file-item" id="fi-${i}">
       <span class="fi-icon">🎵</span>
       <span class="fi-name" style="max-width:130px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis">${entry.file.name}</span>
-      <input type="text" class="fi-title" id="fit-${i}" placeholder="Judul lagu (wajib)" value="${entry.title||''}" oninput="files[${i}].title=this.value;this.classList.toggle('empty',!this.value.trim())" />
       <span class="fi-size">${(entry.file.size/1024).toFixed(0)}KB</span>
       <button class="fi-play" onclick="setPreview(files[${i}].file)" title="Preview">▶</button>
       <span class="fi-status pending" id="fis-${i}">—</span>
@@ -644,20 +643,8 @@ async function startUpload(){
   document.getElementById('resultsBox').style.display='none';
   document.getElementById('resultsBox').innerHTML='';
 
-  // Validasi judul
-  let missingTitle = false;
-  files.forEach((entry,i)=>{
-    const inp = document.getElementById('fit-'+i);
-    if(!entry.title||!entry.title.trim()){
-      missingTitle=true;
-      if(inp){inp.classList.add('empty');inp.focus();}
-    }
-  });
-  if(missingTitle){toast('⚠️ Isi judul untuk semua lagu dulu!','error');btn.disabled=false;return;}
-
   const fd = new FormData();
   files.forEach(entry=>fd.append('files',entry.file));
-  files.forEach(entry=>fd.append('titles[]',entry.title.trim()));
   fd.append('processTempo', document.getElementById('tempoToggle').checked);
   fd.append('tempoMultiplier', (document.getElementById('tempoRange').value/10).toFixed(1));
   fd.append('pitchShift', document.getElementById('pitchRange').value);
