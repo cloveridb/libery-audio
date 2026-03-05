@@ -204,12 +204,13 @@ input[type=range].pitch-range {
 }
 input[type=range]::-webkit-slider-thumb {
   -webkit-appearance: none;
-  width: 14px; height: 14px; border-radius: 50%;
-  background: var(--c); box-shadow: 0 0 8px var(--c);
-  cursor: pointer; transition: transform .2s;
+  width: 16px; height: 16px; border-radius: 50%;
+  background: var(--c);
+  cursor: pointer;
+  /* No box-shadow/transition on thumb — avoids repaint jank during drag */
 }
-input[type=range].pitch-range::-webkit-slider-thumb { background: #ffd740; box-shadow: 0 0 8px #ffd740; }
-input[type=range]::-webkit-slider-thumb:hover { transform: scale(1.3); }
+input[type=range].pitch-range::-webkit-slider-thumb { background: #ffd740; }
+input[type=range]::-webkit-slider-thumb:active { transform: scale(1.2); }
 .ticks { display: flex; justify-content: space-between; font-size: 9px; color: rgba(200,223,240,0.18); margin-top: 5px; }
 
 /* Toggle Switch */
@@ -322,8 +323,8 @@ input[type=range]::-webkit-slider-thumb:hover { transform: scale(1.3); }
 
 input[type=range].fi-range { background: linear-gradient(90deg,#7b2fff var(--p,0%),rgba(255,255,255,0.06) var(--p,0%)); }
 input[type=range].fo-range { background: linear-gradient(90deg,#ff2d6b var(--p,0%),rgba(255,255,255,0.06) var(--p,0%)); }
-input[type=range].fi-range::-webkit-slider-thumb { background: #7b2fff; box-shadow: 0 0 8px #7b2fff; }
-input[type=range].fo-range::-webkit-slider-thumb { background: #ff2d6b; box-shadow: 0 0 8px #ff2d6b; }
+input[type=range].fi-range::-webkit-slider-thumb { background: #7b2fff; }
+input[type=range].fo-range::-webkit-slider-thumb { background: #ff2d6b; }
 
 .ed-controls { display: flex; gap: 10px; align-items: center; margin-bottom: 16px; flex-wrap: wrap; }
 .ed-play-btn { width: 44px; height: 44px; border-radius: 50%; border: 2px solid rgba(0,229,255,0.3); background: none; color: var(--c); font-size: 18px; cursor: pointer; display: flex; align-items: center; justify-content: center; transition: all .2s; flex-shrink: 0; }

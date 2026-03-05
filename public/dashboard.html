@@ -792,6 +792,12 @@ let edPlaying = false, edSrc = null, edGainNode = null, edACtx = null;
 let edPlayStartWall = 0, edPlayOffset = 0, edRafId = null;
 let edDrag = null; // 'start'|'end'|null
 
+// ── Waveform cache ──────────────────────────────────────
+let edCachedPeaks = null;   // Float32Array peak per pixel
+let edCachedW = 0;          // width peaks were built for
+let edOffscreen = null;     // offscreen canvas with static bars
+let edDrawPending = false;  // RAF throttle flag
+
 // Setup editor drop zone & file input
 document.addEventListener('DOMContentLoaded', ()=>{
   const dz = document.getElementById('edDropZone');
@@ -816,7 +822,7 @@ document.addEventListener('DOMContentLoaded', ()=>{
     canvas.addEventListener('pointercancel', ()=>{ edDrag=null; });
   }
 
-  window.addEventListener('resize', ()=>{ if(edBuf) edDrawWave(); });
+  window.addEventListener('resize', ()=>{ if(edBuf){ edCachedW=0; edOffscreen=null; edScheduleDraw(); } });
 });
 
 function edLoadFile(file){
@@ -830,6 +836,8 @@ function edLoadFile(file){
       edTrimStart = 0;
       edTrimEnd = edBuf.duration;
       edFadeIn = 0; edFadeOut = 0;
+      // Invalidate cache when new file loaded
+      edCachedPeaks = null; edCachedW = 0; edOffscreen = null;
       document.getElementById('edFiRange').value = 0;
       document.getElementById('edFoRange').value = 0;
       edUpdateRangeStyle(document.getElementById('edFiRange'));
@@ -872,7 +880,7 @@ function edHandleMove(e){
     edFadeOut = Math.min(edFadeOut, Math.max(0, (edTrimEnd - edTrimStart) * 0.4));
   }
   edUpdateLabels();
-  edDrawWave();
+  edScheduleDraw();
 }
 
 function edUpdateFade(input, type){
@@ -889,7 +897,7 @@ function edUpdateFade(input, type){
     document.getElementById('edFoVal').textContent = val.toFixed(1)+'s';
   }
   edUpdateRangeStyle(input);
-  edDrawWave();
+  edScheduleDraw();
 }
 
 function edUpdateRangeStyle(input){
@@ -914,6 +922,43 @@ function fmtTimeFull(s){
   return `${m}:${parseFloat(sec)<10?'0':''}${sec}`;
 }
 
+// ── edScheduleDraw: RAF-throttled draw ──────────────────
+function edScheduleDraw(){
+  if(edDrawPending) return;
+  edDrawPending = true;
+  requestAnimationFrame(()=>{ edDrawPending=false; edDrawWave(); });
+}
+
+// ── edBuildPeaksCache: compute peaks ONCE per file load ──
+function edBuildPeaksCache(W, H){
+  if(!edBuf) return;
+  const data = edBuf.getChannelData(0);
+  const step = Math.ceil(data.length / W);
+  edCachedPeaks = new Float32Array(W);
+  for(let i = 0; i < W; i++){
+    let max = 0;
+    const end = Math.min(data.length, (i+1)*step);
+    for(let j = i*step; j < end; j++){
+      const v = Math.abs(data[j]);
+      if(v > max) max = v;
+    }
+    edCachedPeaks[i] = max;
+  }
+  // Draw static waveform to offscreen canvas (dim, no trim colouring)
+  // We use a regular canvas as fallback for browsers without OffscreenCanvas
+  edOffscreen = document.createElement('canvas');
+  edOffscreen.width = W; edOffscreen.height = H;
+  const octx = edOffscreen.getContext('2d');
+  octx.fillStyle = '#080f1c';
+  octx.fillRect(0, 0, W, H);
+  for(let i = 0; i < W; i++){
+    const barH = Math.max(2, edCachedPeaks[i] * H * 0.82);
+    octx.fillStyle = 'rgba(0,229,255,0.12)';
+    octx.fillRect(i, (H-barH)/2, 1, barH);
+  }
+  edCachedW = W;
+}
+
 function edDrawWave(){
   const canvas = document.getElementById('edCanvas');
   if(!canvas || !edBuf) return;
@@ -922,34 +967,34 @@ function edDrawWave(){
   const W = Math.round(rect.width * dpr);
   const H = Math.round(rect.height * dpr);
   if(!W || !H) return;
-  canvas.width = W; canvas.height = H;
+
+  // Resize canvas only when dimensions actually change
+  if(canvas.width !== W || canvas.height !== H){
+    canvas.width = W; canvas.height = H;
+    edCachedW = 0; // invalidate cache so it rebuilds
+  }
+
+  // Rebuild peaks cache if needed (first draw or resize)
+  if(!edCachedPeaks || edCachedW !== W){
+    edBuildPeaksCache(W, H);
+  }
+
   const ctx = canvas.getContext('2d');
-
-  const data = edBuf.getChannelData(0);
   const dur = edBuf.duration;
-  const step = Math.ceil(data.length / W);
-
-  // Background
-  ctx.fillStyle = '#080f1c';
-  ctx.fillRect(0, 0, W, H);
-
-  // Dimmed region (outside trim)
   const sx = Math.round((edTrimStart / dur) * W);
-  const ex = Math.round((edTrimEnd / dur) * W);
+  const ex = Math.round((edTrimEnd   / dur) * W);
 
-  for(let i = 0; i < W; i++){
-    let max = 0;
-    for(let j = 0; j < step; j++){
-      const v = Math.abs(data[i*step+j]||0);
-      if(v>max) max=v;
-    }
-    const barH = Math.max(2, max * H * 0.82);
-    const inRegion = (i >= sx && i <= ex);
-    ctx.fillStyle = inRegion ? 'rgba(0,229,255,0.75)' : 'rgba(0,229,255,0.12)';
+  // 1. Blit static dim waveform from offscreen
+  ctx.drawImage(edOffscreen, 0, 0);
+
+  // 2. Colour the active trim region (cyan bright) — only repaint those columns
+  for(let i = sx; i <= ex; i++){
+    const barH = Math.max(2, edCachedPeaks[i] * H * 0.82);
+    ctx.fillStyle = 'rgba(0,229,255,0.75)';
     ctx.fillRect(i, (H-barH)/2, 1, barH);
   }
 
-  // Fade in gradient overlay
+  // 3. Fade in overlay
   if(edFadeIn > 0){
     const fiW = (edFadeIn / dur) * W;
     const grad = ctx.createLinearGradient(sx, 0, sx+fiW, 0);
@@ -957,13 +1002,12 @@ function edDrawWave(){
     grad.addColorStop(1, 'rgba(123,47,255,0.0)');
     ctx.fillStyle = grad;
     ctx.fillRect(sx, 0, fiW, H);
-    // Label
     ctx.fillStyle = 'rgba(200,170,255,0.7)';
     ctx.font = `${9*dpr}px Inter`;
     ctx.fillText(`▶ ${edFadeIn.toFixed(1)}s`, sx+4, H-6);
   }
 
-  // Fade out gradient overlay
+  // 4. Fade out overlay
   if(edFadeOut > 0){
     const foW = (edFadeOut / dur) * W;
     const grad = ctx.createLinearGradient(ex-foW, 0, ex, 0);
@@ -976,27 +1020,16 @@ function edDrawWave(){
     ctx.fillText(`${edFadeOut.toFixed(1)}s ◀`, Math.max(0, ex-foW+4), H-6);
   }
 
-  // Trim handle — START (cyan)
+  // 5. Trim handles
   ctx.fillStyle = '#00e5ff';
   ctx.fillRect(sx-2*dpr, 0, 3*dpr, H);
-  ctx.beginPath();
-  ctx.moveTo(sx-2*dpr, 0);
-  ctx.lineTo(sx+10*dpr, 0);
-  ctx.lineTo(sx-2*dpr, 12*dpr);
-  ctx.closePath();
-  ctx.fill();
+  ctx.beginPath(); ctx.moveTo(sx-2*dpr,0); ctx.lineTo(sx+10*dpr,0); ctx.lineTo(sx-2*dpr,12*dpr); ctx.closePath(); ctx.fill();
 
-  // Trim handle — END (cyan)
   ctx.fillStyle = '#00e5ff';
   ctx.fillRect(ex-1*dpr, 0, 3*dpr, H);
-  ctx.beginPath();
-  ctx.moveTo(ex+2*dpr, 0);
-  ctx.lineTo(ex-10*dpr, 0);
-  ctx.lineTo(ex+2*dpr, 12*dpr);
-  ctx.closePath();
-  ctx.fill();
+  ctx.beginPath(); ctx.moveTo(ex+2*dpr,0); ctx.lineTo(ex-10*dpr,0); ctx.lineTo(ex+2*dpr,12*dpr); ctx.closePath(); ctx.fill();
 
-  // Playhead
+  // 6. Playhead
   if(edPlaying && edACtx){
     const elapsed = edACtx.currentTime - edPlayStartWall;
     const playT = edPlayOffset + elapsed;
@@ -1078,7 +1111,7 @@ function edReset(){
   edUpdateRangeStyle(document.getElementById('edFiRange'));
   edUpdateRangeStyle(document.getElementById('edFoRange'));
   edUpdateLabels();
-  edDrawWave();
+  edScheduleDraw();
 }
 
 async function edApplyAndSend(){
