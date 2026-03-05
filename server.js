@@ -371,6 +371,21 @@ app.post("/api/admin/upload", requireAdmin, adminUpload.array("files"), async (r
           if (poll.success) assetId = poll.assetId;
           else throw new Error(JSON.stringify(poll.error));
         }
+
+        // PATCH to update displayName after asset is created
+        if (assetId && forced) {
+          try {
+            await axios.patch(
+              `https://apis.roblox.com/assets/v1/assets/${assetId}?updateMask=displayName`,
+              { displayName: forced },
+              { headers: { "x-api-key": apiKey, "Content-Type": "application/json" } }
+            );
+            log(`Admin PATCH displayName: ${assetId} → "${forced}"`, "success");
+          } catch (pe) {
+            log(`Admin PATCH displayName failed (non-fatal): ${pe.message}`, "warn");
+          }
+        }
+
         histEntry.status = "SUCCESS";
         histEntry.asset_id = assetId;
         success = true;
@@ -667,7 +682,7 @@ app.post("/api/upload", requireAuth, upload.array("files"), async (req, res) => 
   const titlesToUse = allTitles.slice(0, filesToProcess.length);
 
   const processTempo = req.body.processTempo === "true";
-  const tempoMultiplier = parseFloat(req.body.tempoMultiplier) || 2.0;
+  const tempoMultiplier = parseFloat(req.body.tempoMultiplier) || 1.0;
   const pitchShift = parseFloat(req.body.pitchShift) || 0;
   const results = [];
 
@@ -723,6 +738,20 @@ app.post("/api/upload", requireAuth, upload.array("files"), async (req, res) => 
           const poll = await pollOperation(operationId, apiKey);
           if (poll.success) assetId = poll.assetId;
           else throw new Error(JSON.stringify(poll.error));
+        }
+
+        // PATCH to update displayName after asset is created
+        if (assetId && forced) {
+          try {
+            await axios.patch(
+              `https://apis.roblox.com/assets/v1/assets/${assetId}?updateMask=displayName`,
+              { displayName: forced },
+              { headers: { "x-api-key": apiKey, "Content-Type": "application/json" } }
+            );
+            log(`DisplayName patched: ${assetId} → "${forced}"`, "success");
+          } catch (pe) {
+            log(`PATCH displayName failed (non-fatal): ${pe.message}`, "warn");
+          }
         }
 
         histEntry.status = "SUCCESS";

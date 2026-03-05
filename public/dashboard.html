@@ -922,11 +922,18 @@ async function startUpload(){
     if(s){s.textContent='⏳';s.className='fi-status uploading';}
   });
 
-  document.getElementById('upBar').style.width='30%';
+  document.getElementById('upBar').style.width='20%';
   document.getElementById('upStatus').textContent='Mengupload ke Roblox...';
+
+  // Animasi progress supaya tidak terasa stuck saat polling Roblox
+  let progVal = 20;
+  const progTimer = setInterval(()=>{
+    if(progVal < 85){ progVal += 2; document.getElementById('upBar').style.width=progVal+'%'; }
+  }, 1500);
 
   try{
     const r = await fetch('/api/upload',{method:'POST',body:fd});
+    clearInterval(progTimer);
     const d = await r.json();
 
     if(!r.ok){
@@ -954,7 +961,11 @@ async function startUpload(){
       `).join('');
 
       d.results.forEach((res,i)=>{
-        const fi = files.findIndex(e=>e.file.name===res.file||e.file.name===res.filename);
+        // Gunakan index langsung, fallback ke findIndex untuk kompatibilitas
+        let fi = i;
+        if (fi >= files.length || (files[fi].file.name !== res.file && files[fi].file.name !== res.filename)) {
+          fi = files.findIndex(e=>e.file.name===res.file||e.file.name===res.filename);
+        }
         if(fi>=0){
           const s=document.getElementById('fis-'+fi);
           if(s){s.textContent=res.status==='SUCCESS'?'✅':'❌';s.className='fi-status '+(res.status==='SUCCESS'?'success':'failed');}
@@ -965,6 +976,7 @@ async function startUpload(){
       await loadUser(); // refresh quota
     }
   }catch(e){
+    clearInterval(progTimer);
     toast('Koneksi error: '+e.message,'error');
     document.getElementById('upStatus').textContent='Error koneksi';
   }
